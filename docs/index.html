@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPSFORGE · Governed AI for Campaign Operations</title>
+<meta name="description" content="Controlled AI agents run campaign QA, audience validation and release readiness. Humans approve every production-impacting decision, and failed results can't be waved through.">
+<meta property="og:title" content="OPSFORGE · AI does the checking. Humans make the call.">
+<meta property="og:description" content="Governed AI agents for marketing & CRM operations, with human approval gates, audited overrides and a full run ledger.">
+<meta property="og:image" content="https://sghatge.github.io/opsforge/media/overview.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ea580c'/%3E%3Cpath d='M16 5c1.3 4 5.3 6 5.3 11.3a5.3 5.3 0 0 1-10.6 0c0-2.1.9-3.6 2.1-4.8.3 1.9 1.3 3 2.7 3.5C14.7 10.3 14.7 7 16 5z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#070b14;--panel:#0f1626;--line:#1e293b;--ink:#e2e8f0;--muted:#94a3b8;--acc:#f97316;--acc2:#fb923c;--brand:#818cf8;--ok:#34d399;--bad:#f87171}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--acc2)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;z-index:10;background:rgba(7,11,20,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;gap:12px;height:62px}
+  .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#fb923c,#ea580c);display:grid;place-items:center}
+  .wm{font-weight:800;letter-spacing:.14em}.wm span{color:var(--acc2)}
+  header nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+  header nav a{color:var(--muted);text-decoration:none}header nav a:hover{color:#fff}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;padding:12px 20px;border-radius:12px;text-decoration:none;transition:filter .15s,transform .05s}
+  .btn:active{transform:translateY(1px)}
+  .btn.p{background:linear-gradient(180deg,#fb923c,#ea580c);color:#fff;box-shadow:0 6px 24px rgba(234,88,12,.35)}
+  .btn.p:hover{filter:brightness(1.07)}
+  .btn.g{border:1px solid #334155;color:#fff}.btn.g:hover{background:#111a2c}
+  .hero{position:relative;overflow:hidden;padding:84px 0 40px;text-align:center}
+  .hero::before{content:"";position:absolute;inset:-200px -200px auto;height:600px;background:radial-gradient(600px 300px at 70% 20%,rgba(249,115,22,.28),transparent 70%),radial-gradient(500px 260px at 25% 10%,rgba(99,102,241,.25),transparent 70%);pointer-events:none}
+  .pill{display:inline-flex;gap:8px;align-items:center;border:1px solid #334155;border-radius:999px;padding:6px 14px;font-size:13px;color:var(--muted);position:relative}
+  .pill b{color:var(--acc2)}
+  h1{font-size:clamp(34px,5.4vw,60px);line-height:1.08;letter-spacing:-.03em;margin:20px auto 16px;max-width:860px;position:relative}
+  h1 em{font-style:normal;background:linear-gradient(90deg,#fb923c,#f97316);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:18px;color:var(--muted);max-width:680px;margin:0 auto 30px;position:relative}
+  .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
+  .video{margin:52px auto 0;max-width:1000px;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 6px rgba(249,115,22,.06);position:relative;background:#000}
+  .video video{display:block;width:100%;height:auto}
+  .cap{font-size:13px;color:var(--muted);margin-top:12px}
+  section{padding:72px 0}
+  h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.02em;margin:0 0 10px}
+  .lead{color:var(--muted);max-width:640px;margin:0 0 36px;font-size:16.5px}
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h3{margin:12px 0 6px;font-size:16.5px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:rgba(249,115,22,.12);color:var(--acc2)}
+  .ic svg{width:20px;height:20px}
+  .split{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;align-items:center}
+  @media(max-width:880px){.split{grid-template-columns:1fr}}
+  .shot{border-radius:14px;border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.5);width:100%;display:block}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.steps li{counter-increment:s;position:relative;padding:0 0 18px 46px;color:var(--muted)}
+  ol.steps li b{color:var(--ink);display:block}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:9px;background:#1e1b4b;color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:14px}
+  .code{background:#0b1220;border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-family:"Cascadia Code",Consolas,monospace;font-size:14px;color:#e2e8f0;overflow:auto;white-space:pre}
+  .code .c{color:#64748b}
+  .honest{border-left:3px solid var(--acc);padding:6px 0 6px 18px;color:var(--muted)}
+  .honest li{margin:4px 0}
+  footer{border-top:1px solid var(--line);padding:32px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+  .stat{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:34px;color:var(--muted);font-size:14px;position:relative}
+  .stat b{display:block;color:#fff;font-size:22px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.6.7-2.7 1.6-3.6.2 1.4 1 2.3 2 2.6C11 7 11 4.5 12 2z"/><path d="M5 21h14"/></svg></div>
+  <div class="wm">OPS<span>FORGE</span></div>
+  <nav><a href="#how">How it works</a><a href="#run">Run it</a><a href="https://github.com/sghatge/opsforge">GitHub</a></nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <span class="pill"><b>v0.4</b> Failed results can no longer be waved through</span>
+  <h1>AI does the checking.<br><em>Humans make the call.</em></h1>
+  <p class="sub">Governed AI agents for marketing &amp; CRM operations. They run campaign QA, audience validation and release readiness, then stop and wait for a named person before anything production-impacting happens.</p>
+  <div class="ctas">
+    <a class="btn p" href="https://github.com/sghatge/opsforge">View on GitHub</a>
+    <a class="btn g" href="https://github.com/sghatge/opsforge/releases/latest">Download v0.4.0</a>
+  </div>
+  <div class="stat"><div><b>5</b>controlled agents</div><div><b>9-point</b>release gate</div><div><b>72</b>automated tests</div><div><b>0</b>external calls</div></div>
+  <div class="video"><video controls preload="metadata" poster="media/overview.png" playsinline>
+    <source src="media/opsforge-how-to.mp4" type="video/mp4">Your browser can't play this video. <a href="media/opsforge-how-to.mp4">Download it</a>.</video></div>
+  <div class="cap">2-minute walkthrough, recorded from the running app.</div>
+</div></div>
+
+<section id="how"><div class="wrap">
+  <h2>Built for the moment an agent gets it wrong</h2>
+  <p class="lead">Most AI-ops demos let the agent act and explain later. In campaign operations, that's how a broken email reaches a million inboxes. OPSFORGE is built the other way round.</p>
+  <div class="grid">
+    <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg></div><h3>Defined, not improvised</h3><p>Every agent has a fixed plan and explicit tools. Nothing outside the plan executes.</p></div>
+    <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><h3>Named human gates</h3><p>QA sign-off and release recommendations pause until a named person approves. Agents can't approve themselves.</p></div>
+    <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div><h3>Audited overrides</h3><p>Approving a failed QA or NOT READY result needs a written reason and becomes its own audit event.</p></div>
+    <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Fully traceable</h3><p>Every run, step, output, approval and override is persisted in a run ledger and audit trail.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:20px"><div class="wrap split">
+  <div>
+    <h2>The override, step by step</h2>
+    <ol class="steps" style="margin-top:22px">
+      <li><b>The agent runs QA</b>Rule-driven checks on the campaign, with the report filed as evidence.</li>
+      <li><b>The run stops at the human gate</b>A verdict banner shows what's being approved: here, 6 of 10 checks failed.</li>
+      <li><b>Approve stays locked</b>It unlocks only once the approver writes why the failure is acceptable.</li>
+      <li><b>The override is logged separately</b>Approver, verdict and reason are highlighted in the audit trail.</li>
+    </ol>
+  </div>
+  <img class="shot" src="media/override.png" alt="Approval screen requiring an override reason for a failed QA result">
+</div></section>
+
+<section style="padding-top:20px"><div class="wrap split">
+  <img class="shot" src="media/audit.png" alt="Audit trail with the override highlighted">
+  <div>
+    <h2>Nothing gets approved silently</h2>
+    <p class="lead" style="margin:0">The audit trail records every agent step and every human decision. Overrides stand out, so a reviewer can see in seconds who accepted a failure, and why.</p>
+  </div>
+</div></section>
+
+<section id="run"><div class="wrap">
+  <h2>Run it locally in a minute</h2>
+  <p class="lead">Python 3.10+ and nothing else: no third-party packages, no external calls. Demo mode seeds a synthetic environment with a decision already waiting for you.</p>
+  <div class="code"><span class="c"># clone and start with demo data</span>
+git clone https://github.com/sghatge/opsforge.git
+cd opsforge
+python -m opsforge --demo
+<span class="c"># then open http://127.0.0.1:8765</span></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <h2>Honest limitations</h2>
+  <ul class="honest">
+    <li>A local MVP, not a production deployment.</li>
+    <li>The AI layer is a deterministic, template-driven provider; a real LLM can be plugged in behind one interface.</li>
+    <li>The Adobe Campaign adapter is a dry-run interface stub. No credentials are read or stored.</li>
+    <li>No authentication or role-based access yet. Two-person approval for overrides is on the v0.5 roadmap.</li>
+    <li>All demo data is synthetic.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">
+  <div>Built by <b style="color:#fff">Sangram Ghatge</b> · Marketing Ops &amp; CRM technology</div>
+  <div><a href="https://www.linkedin.com/in/sangram-g-2369705b">LinkedIn</a> · <a href="https://github.com/sghatge/opsforge">GitHub</a> · © 2026 All rights reserved</div>
+</div></footer>
+</body>
+</html>

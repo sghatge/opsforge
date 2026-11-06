@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPSFORGE — AI Operations Platform</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ea580c'/%3E%3Cpath d='M16 5c1.3 4 5.3 6 5.3 11.3a5.3 5.3 0 0 1-10.6 0c0-2.1.9-3.6 2.1-4.8.3 1.9 1.3 3 2.7 3.5C14.7 10.3 14.7 7 16 5z' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#f4f6fb; --surface:#ffffff; --surface-2:#f8fafc; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --side:#0b1220; --side-ink:#cbd5e1; --side-muted:#64748b; --side-hover:#141d31;
+    --accent:#f97316; --accent-2:#ea580c; --accent-soft:#fff3e8; --brand:#4f46e5; --brand-soft:#eef2ff;
+    --ok:#059669; --ok-soft:#ecfdf5; --warn:#d97706; --warn-soft:#fffbeb; --bad:#dc2626; --bad-soft:#fef2f2;
+    --info:#2563eb; --info-soft:#eff6ff;
+    --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 16px rgba(15,23,42,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#070b14; --surface:#0f1626; --surface-2:#131c2f; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b;
+      --accent-soft:#2a1709; --brand-soft:#1a1b3a; --ok-soft:#06251c; --warn-soft:#2a1d06; --bad-soft:#2b0d0d; --info-soft:#0c1a36;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#070b14; --surface:#0f1626; --surface-2:#131c2f; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b;
+    --accent-soft:#2a1709; --brand-soft:#1a1b3a; --ok-soft:#06251c; --warn-soft:#2a1d06; --bad-soft:#2b0d0d; --info-soft:#0c1a36;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:"Inter","Segoe UI Variable","Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+  aside{background:var(--side);color:var(--side-ink);padding:22px 14px;position:sticky;top:0;height:100vh;overflow:auto;display:flex;flex-direction:column}
+  .brand{display:flex;align-items:center;gap:10px;padding:0 10px 22px}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#fb923c,#ea580c);display:grid;place-items:center;box-shadow:0 4px 14px rgba(249,115,22,.35)}
+  .logo svg{width:18px;height:18px}
+  .wordmark{font-weight:800;letter-spacing:.14em;font-size:15px;color:#fff}
+  .wordmark span{color:#fb923c}
+  .ver{font-size:11px;color:var(--side-muted)}
+  .group{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--side-muted);padding:16px 12px 6px;font-weight:600}
+  nav button{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;color:var(--side-ink);font-size:13.5px;font-weight:500;transition:background .15s,color .15s}
+  nav button svg{width:17px;height:17px;flex:none;opacity:.75}
+  nav button:hover{background:var(--side-hover);color:#fff}
+  nav button.active{background:linear-gradient(90deg,rgba(249,115,22,.18),rgba(249,115,22,.04));color:#fff;box-shadow:inset 3px 0 0 #f97316}
+  nav button.active svg{opacity:1;color:#fb923c}
+  .count{margin-left:auto;background:#f97316;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;min-width:20px;text-align:center}
+  .count.zero{display:none}
+  .side-foot{margin-top:auto;padding:16px 12px 0;font-size:11.5px;color:var(--side-muted);border-top:1px solid #1a2540}
+  .side-foot .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-right:6px;box-shadow:0 0 0 3px rgba(16,185,129,.18)}
+  .content{min-width:0;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;gap:12px;padding:16px 32px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:5}
+  .crumb{font-weight:700;font-size:16px}
+  .crumb small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+  .topbar .spacer{flex:1}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface-2)}
+  .iconbtn{all:unset;cursor:pointer;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--line);color:var(--muted)}
+  .iconbtn:hover{color:var(--ink)}
+  main{padding:28px 32px 40px;max-width:1180px;width:100%}
+  .panel{display:none;animation:fade .25s ease}.panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  h2{margin:0 0 4px;font-size:22px;letter-spacing:-.01em}
+  h3{margin:0 0 10px;font-size:15px}
+  p.lead{margin:0 0 22px;color:var(--muted);max-width:720px}
+  .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+  .grid{display:grid;gap:16px}
+  .g4{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .g2{grid-template-columns:1.4fr 1fr}
+  @media(max-width:1000px){.g2{grid-template-columns:1fr}}
+  .hero{position:relative;overflow:hidden;border-radius:18px;padding:28px 30px;color:#fff;background:radial-gradient(1200px 300px at 90% -40%,rgba(249,115,22,.55),transparent 60%),linear-gradient(135deg,#0b1220,#1e1b4b);box-shadow:var(--shadow);margin-bottom:20px}
+  .hero h2{font-size:26px;color:#fff}
+  .hero p{color:#c7d2fe;margin:4px 0 18px;max-width:620px}
+  .hero .actions{display:flex;gap:10px;flex-wrap:wrap;position:relative}
+  .hero .glow{position:absolute;right:-40px;bottom:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(251,146,60,.35),transparent 65%)}
+  .pending-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:5px 12px;font-size:12.5px;margin-bottom:14px}
+  .pulse{width:8px;height:8px;border-radius:50%;background:#fb923c;box-shadow:0 0 0 0 rgba(251,146,60,.7);animation:pulse 1.6s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 10px rgba(251,146,60,0)}100%{box-shadow:0 0 0 0 rgba(251,146,60,0)}}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:center}
+  .kpi .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
+  .kpi .ic svg{width:20px;height:20px}
+  .kpi .n{font-size:24px;font-weight:750;letter-spacing:-.02em;line-height:1.1}
+  .kpi .l{font-size:12px;color:var(--muted)}
+  .kpi.alert{border-color:#fdba74;background:linear-gradient(0deg,var(--accent-soft),var(--surface))}
+  .t-brand{background:var(--brand-soft);color:var(--brand)} .t-ok{background:var(--ok-soft);color:var(--ok)}
+  .t-warn{background:var(--warn-soft);color:var(--warn)} .t-acc{background:var(--accent-soft);color:var(--accent-2)}
+  .t-info{background:var(--info-soft);color:var(--info)}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+  .flow div{border:1px dashed var(--line);border-radius:12px;padding:14px;background:var(--surface-2)}
+  .flow b{display:block;font-size:13px;margin-bottom:2px}
+  .flow span{font-size:12px;color:var(--muted)}
+  .flow i{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:12px;margin-bottom:8px}
+  button.primary,button.ok,button.bad,button.ghost,button.light{font:inherit;font-size:13px;font-weight:600;border-radius:10px;padding:9px 16px;cursor:pointer;border:1px solid transparent;transition:transform .05s,filter .15s,background .15s}
+  button:active{transform:translateY(1px)}
+  button.primary{background:linear-gradient(180deg,#fb923c,#ea580c);color:#fff;box-shadow:0 2px 10px rgba(234,88,12,.3)}
+  button.primary:hover{filter:brightness(1.06)}
+  button.ok{background:var(--ok);color:#fff}
+  button.bad{background:var(--surface);color:var(--bad);border-color:#fecaca}
+  button.bad:hover{background:var(--bad-soft)}
+  button.ghost{background:var(--surface);color:var(--ink);border-color:var(--line);padding:6px 12px}
+  button.ghost:hover{background:var(--surface-2)}
+  button.light{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)}
+  button.light:hover{background:rgba(255,255,255,.18)}
+  button:disabled{opacity:.45;cursor:not-allowed;filter:none}
+  .tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;background:var(--surface-2);padding:10px 14px;border-bottom:1px solid var(--line)}
+  td{border-bottom:1px solid var(--line);padding:11px 14px;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:var(--surface-2)}
+  code,.mono{font-family:"Cascadia Code","JetBrains Mono",Consolas,monospace;font-size:12px}
+  .muted{color:var(--muted)}
+  main a{color:var(--accent-2);text-decoration:none;font-weight:600}
+  main a:hover{text-decoration:underline}
+  .status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;white-space:nowrap;text-transform:capitalize}
+  .status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .s-pass,.s-completed,.s-ready,.s-done,.s-ok,.s-dry_run,.s-available{background:var(--ok-soft);color:var(--ok)}
+  .s-fail,.s-failed,.s-not_ready,.s-rejected,.s-blocked,.s-cancelled{background:var(--bad-soft);color:var(--bad)}
+  .s-warn,.s-pass_with_warnings,.s-review{background:var(--warn-soft);color:var(--warn)}
+  .s-pending_approval{background:var(--accent-soft);color:var(--accent-2)}
+  .s-flagged_for_review,.s-needs_human_review{background:var(--info-soft);color:var(--info)}
+  .s-running,.s-pending{background:var(--surface-2);color:var(--muted)}
+  .tag{display:inline-block;background:var(--accent-soft);color:var(--accent-2);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700}
+  .tag.blue{background:var(--brand-soft);color:var(--brand)}
+  .agent{display:flex;flex-direction:column;gap:10px}
+  .agent .head{display:flex;gap:12px;align-items:flex-start}
+  .agent .av{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--brand-soft);color:var(--brand)}
+  .agent .av svg{width:20px;height:20px}
+  .agent h3{margin:0;font-size:15px}
+  .agent .id{color:var(--muted);font-size:11.5px}
+  .agent .role{color:var(--muted);font-size:13px}
+  .plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .plan li{display:flex;gap:8px;align-items:center;font-size:12.5px}
+  .plan li i{font-style:normal;width:20px;height:20px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;color:var(--muted);flex:none}
+  .agent .foot{margin-top:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .runhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .runhead h3{margin:0}
+  .verdict{display:flex;gap:14px;align-items:flex-start;border-radius:14px;padding:16px 18px;margin-bottom:16px;border:1px solid}
+  .verdict .vi{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;color:#fff;font-weight:800;font-size:16px}
+  .verdict b{display:block;font-size:14.5px}
+  .verdict span{font-size:12.5px}
+  .v-block{background:var(--bad-soft);border-color:#fecaca;color:var(--bad)} .v-block .vi{background:var(--bad)}
+  .v-caution{background:var(--warn-soft);border-color:#fde68a;color:var(--warn)} .v-caution .vi{background:var(--warn)}
+  .v-ok{background:var(--ok-soft);border-color:#a7f3d0;color:var(--ok)} .v-ok .vi{background:var(--ok)}
+  .timeline{list-style:none;margin:0 0 18px;padding:0}
+  .timeline li{position:relative;padding:0 0 16px 40px}
+  .timeline li::before{content:"";position:absolute;left:13px;top:30px;bottom:0;width:2px;background:var(--line)}
+  .timeline li:last-child::before{display:none}
+  .timeline .node{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;border:2px solid var(--line);background:var(--surface);color:var(--muted)}
+  .timeline .done .node{background:var(--ok);border-color:var(--ok);color:#fff}
+  .timeline .pending_approval .node{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 5px var(--accent-soft)}
+  .timeline .failed .node,.timeline .cancelled .node{background:var(--bad);border-color:var(--bad);color:#fff}
+  .timeline .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:28px}
+  .timeline .row b{font-size:13.5px}
+  details{margin-top:4px}
+  summary{cursor:pointer;color:var(--muted);font-size:12px;user-select:none}
+  pre{background:#0b1220;color:#e2e8f0;padding:14px;border-radius:12px;font-size:12px;overflow:auto;white-space:pre-wrap;max-height:320px;margin:8px 0 0}
+  .decision{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--surface-2)}
+  .decision form{grid-template-columns:1fr 1fr}
+  .counter{font-size:11.5px;color:var(--muted);text-align:right;margin-top:4px}
+  .counter.okc{color:var(--ok)}
+  form{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;font-weight:600}
+  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:inherit;background:var(--surface);color:var(--ink);transition:border .15s,box-shadow .15s}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:#fb923c;box-shadow:0 0 0 3px rgba(249,115,22,.15)}
+  input[type=checkbox]{width:auto;accent-color:#ea580c;margin:0 8px 0 0}
+  label.check{display:flex;align-items:center;font-weight:500;color:var(--ink);font-size:13px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--surface);cursor:pointer;margin:0}
+  .full{grid-column:1/-1}
+  .note{font-size:13px;color:var(--muted);border:1px solid var(--line);padding:12px 14px;background:var(--surface-2);border-radius:12px;margin:12px 0}
+  .note.accent{border-color:#fdba74;background:var(--accent-soft);color:var(--ink)}
+  .hidden{display:none}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .result{margin-top:18px}
+  .big{font-size:20px;font-weight:750}
+  .feed{list-style:none;margin:0;padding:0}
+  .feed li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .feed li:last-child{border-bottom:none}
+  .feed .dotc{width:10px;height:10px;border-radius:50%;margin-top:6px;flex:none;background:var(--muted)}
+  .feed .ev{font-weight:600;font-size:13px}
+  .feed .meta{font-size:12px;color:var(--muted);word-break:break-word}
+  .d-ok{background:var(--ok)!important}.d-bad{background:var(--bad)!important}.d-acc{background:var(--accent)!important}.d-brand{background:var(--brand)!important}
+  .feed li.override{background:var(--bad-soft);border-radius:10px;padding:10px;border-bottom:none;margin:4px 0}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+  .toast{position:fixed;right:24px;bottom:24px;background:#0b1220;color:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px;max-width:440px;transform:translateY(20px);opacity:0;transition:all .25s;z-index:50;border-left:4px solid #f97316;pointer-events:none}
+  .toast.show{transform:none;opacity:1}
+  .toast.err{border-left-color:#ef4444}
+  @media(max-width:820px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}main{padding:20px 16px}.topbar{padding:12px 16px}.decision form{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 4.5 4 8.5a4 4 0 0 1-8 0c0-1.6.7-2.7 1.6-3.6.2 1.4 1 2.3 2 2.6C11 7 11 4.5 12 2z"/><path d="M5 21h14"/></svg></div>
+    <div><div class="wordmark">OPS<span>FORGE</span></div><div class="ver" id="version">v0.4.0</div></div>
+  </div>
+  <nav id="nav">
+    <div class="group">Operate</div>
+    <button data-p="overview" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>Overview</button>
+    <button data-p="agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>Agent Workspace</button>
+    <button data-p="runs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Run Ledger <span class="count zero" id="nav-pending">0</span></button>
+    <div class="group">Quality</div>
+    <button data-p="qacheck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Campaign QA</button>
+    <button data-p="rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="3"/></svg>QA Rules</button>
+    <button data-p="segmentation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>Audience</button>
+    <button data-p="readiness"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>Readiness</button>
+    <div class="group">Govern</div>
+    <button data-p="processes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H15a3 3 0 0 1 3 3v6.5M6 8.5V15a3 3 0 0 0 3 3h6.5"/></svg>Processes</button>
+    <button data-p="evidence"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>Evidence</button>
+    <button data-p="roi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>ROI</button>
+    <button data-p="adapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7V3M15 7V3M7 7h10v5a5 5 0 0 1-10 0z"/><path d="M12 17v4"/></svg>Adapters</button>
+    <button data-p="audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Audit Trail</button>
+  </nav>
+  <div class="side-foot"><span class="dot"></span>Local · dry-run · no external calls<br>Humans approve every release.</div>
+</aside>
+
+<div class="content">
+<div class="topbar">
+  <div class="crumb" id="crumb">Overview<small>Operations at a glance</small></div>
+  <div class="spacer"></div>
+  <span class="chip">Deterministic AI provider</span>
+  <button class="iconbtn" id="theme" title="Toggle light / dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+</div>
+<main>
+
+<!-- OVERVIEW -->
+<section id="overview" class="panel active">
+  <div class="hero">
+    <div class="glow"></div>
+    <div id="hero-pill"></div>
+    <h2>AI does the checking. Humans make the call.</h2>
+    <p>OPSFORGE runs campaign QA, audience validation and release readiness through controlled agents. Anything production-impacting waits for a named person, and every step is recorded.</p>
+    <div class="actions">
+      <button class="primary" onclick="tab('runs')">Review decisions</button>
+      <button class="light" onclick="tab('agents')">Run an agent</button>
+      <button class="light" id="demo-btn" onclick="loadDemo()">Load demo data</button>
+    </div>
+  </div>
+  <div class="grid g4" id="metric-cards"></div>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="box">
+      <h3>How a governed run works</h3>
+      <div class="flow">
+        <div><i>1</i><b>Agent runs its plan</b><span>Fixed steps, explicit tools. Nothing improvised.</span></div>
+        <div><i>2</i><b>Evidence is filed</b><span>Every output lands in the evidence register.</span></div>
+        <div><i>3</i><b>Human gate</b><span>Release-impacting steps pause for a named approver.</span></div>
+        <div><i>4</i><b>Failures need a reason</b><span>Approving a failed result is an audited override.</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Recent activity</h3>
+      <ul class="feed" id="recent"></ul>
+    </div>
+  </div>
+  <div id="demo-bar"></div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents" class="panel">
+  <h2>Agent workspace</h2>
+  <p class="lead">Five registered agents with fixed plans and explicit tools. "Run sample task" executes a safe, deterministic demo. Steps marked <span class="tag">Human gate</span> pause until a named person decides.</p>
+  <div class="grid g3" id="agent-list"></div>
+</section>
+
+<!-- RUNS -->
+<section id="runs" class="panel">
+  <h2>Run ledger</h2>
+  <p class="lead">Every agent execution with its step history, tool outputs and approvals. Runs waiting on you are listed first.</p>
+  <div id="run-detail"></div>
+  <div class="tablewrap"><table id="runs-table"><thead><tr><th>Run</th><th>Agent</th><th>Status</th><th>Updated</th><th></th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<!-- QA CHECK -->
+<section id="qacheck" class="panel">
+  <h2>Campaign QA check</h2>
+  <p class="lead">Run the configured rule set against any campaign payload. Uncertain results are flagged for human review, never guessed.</p>
+  <div class="box"><form id="qa-form">
+    <div><label>Campaign name</label><input name="name" required placeholder="Black Friday teaser"></div>
+    <div><label>Subject line</label><input name="subject" placeholder="Early access starts now"></div>
+    <div class="full"><label>HTML</label><textarea name="html" rows="4"><html><head><title>Test</title></head><body>Hello &lt;% FirstName %&gt;</body></html></textarea></div>
+    <div class="full"><label>URLs (one per line)</label><textarea name="urls" rows="3">https://example.com/offer
+https://example.com/unsubscribe</textarea></div>
+    <div><label>Personalisation text</label><input name="personalization" value="<% FirstName %>"></div>
+    <div><label>&nbsp;</label><label class="check"><input type="checkbox" name="tracking" value="true" checked>Tracking configured</label></div>
+    <div><label>&nbsp;</label><label class="check"><input type="checkbox" name="consent" value="true" checked>Consent confirmed</label></div>
+    <div class="full"><button class="primary" type="submit">Run QA</button></div>
+  </form></div>
+  <div id="qa-result"></div>
+</section>
+
+<!-- RULES -->
+<section id="rules" class="panel">
+  <h2>QA rule configuration</h2>
+  <p class="lead">The QA engine evaluates exactly these rules. Add, tune, disable or delete them without touching code.</p>
+  <div class="tablewrap"><table id="rules-table"><thead><tr><th>Rule</th><th>Target</th><th>Type</th><th>Severity</th><th>Enabled</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="box" style="margin-top:18px"><h3>Add a rule</h3>
+  <form id="rule-form">
+    <div><label>Name</label><input name="name" required placeholder="Unsubscribe link present"></div>
+    <div><label>Target</label><select name="target"><option>subject</option><option>html</option><option>urls</option><option>personalization</option><option>tracking</option><option>consent</option></select></div>
+    <div><label>Rule type</label><select name="rule_type"><option>required</option><option>max_length</option><option>regex_match</option><option>regex_forbid</option><option>balanced_tags</option><option>url_format</option><option>contains_url</option><option>truthy</option></select></div>
+    <div><label>Severity</label><select name="severity"><option>error</option><option>warn</option></select></div>
+    <div class="full"><label>Params (JSON, optional)</label><input name="params" placeholder='{"max": 60}'></div>
+    <div class="full"><button class="primary" type="submit">Add rule</button></div>
+  </form></div>
+</section>
+
+<!-- SEGMENTATION -->
+<section id="segmentation" class="panel">
+  <h2>Audience validation</h2>
+  <p class="lead">CSV structure, duplicates, contact format and consent. Rows without an explicit consent "yes" are blocked, never assumed.</p>
+  <div class="box"><form id="seg-form">
+    <div class="full"><label>Audience CSV</label><textarea name="csv" rows="7" class="mono">email,consent
+alex@example.com,yes
+blake@example.com,yes
+alex@example.com,yes
+casey@example.com,</textarea></div>
+    <div><label>Volume cap (optional)</label><input name="volume_cap" type="number" min="1"></div>
+    <div class="full"><button class="primary" type="submit">Validate audience</button></div>
+  </form></div>
+  <div id="seg-result"></div>
+</section>
+
+<!-- READINESS -->
+<section id="readiness" class="panel">
+  <h2>Deployment readiness</h2>
+  <p class="lead">Nine-point release gate. The result is a readiness opinion only; deployment is always done by humans.</p>
+  <div class="box"><form id="rdy-form">
+    <label class="check"><input type="checkbox" name="audience_validated" checked>Audience validated</label>
+    <label class="check"><input type="checkbox" name="consent_confirmed" checked>Consent confirmed</label>
+    <label class="check"><input type="checkbox" name="subject_line_final" checked>Subject final</label>
+    <label class="check"><input type="checkbox" name="urls_tested" checked>URLs tested</label>
+    <label class="check"><input type="checkbox" name="tracking_configured" checked>Tracking configured</label>
+    <label class="check"><input type="checkbox" name="html_reviewed" checked>HTML reviewed</label>
+    <label class="check"><input type="checkbox" name="personalisation_tested">Personalisation tested</label>
+    <label class="check"><input type="checkbox" name="assets_approved" checked>Assets approved</label>
+    <label class="check"><input type="checkbox" name="rollback_plan">Rollback plan</label>
+    <div class="full"><button class="primary" type="submit">Assess readiness</button></div>
+  </form></div>
+  <div id="rdy-result"></div>
+</section>
+
+<!-- PROCESSES -->
+<section id="processes" class="panel">
+  <h2>Process register</h2>
+  <p class="lead">Register processes and score maturity across five dimensions (1–5 each), then generate an SOP draft.</p>
+  <div class="box"><form id="process-form">
+    <div><label>Process name</label><input name="name" required></div>
+    <div><label>Owner</label><input name="owner"></div>
+    <div class="full"><label>Description</label><input name="description"></div>
+    <div class="full"><button class="primary" type="submit">Register process</button></div>
+  </form></div>
+  <div class="tablewrap"><table id="process-table"><thead><tr><th>Process</th><th>Owner</th><th>ID</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div id="assess-area" class="box hidden" style="margin-top:18px">
+    <h3>Assess <span id="assess-name"></span></h3>
+    <form id="assess-form">
+      <div><label>Documentation (1–5)</label><input name="documentation" type="number" min="1" max="5" value="3"></div>
+      <div><label>Standardisation (1–5)</label><input name="standardization" type="number" min="1" max="5" value="3"></div>
+      <div><label>Automation (1–5)</label><input name="automation" type="number" min="1" max="5" value="2"></div>
+      <div><label>Measurement (1–5)</label><input name="measurement" type="number" min="1" max="5" value="3"></div>
+      <div><label>Governance (1–5)</label><input name="governance" type="number" min="1" max="5" value="3"></div>
+      <div class="full"><button class="primary" type="submit">Score process</button></div>
+    </form>
+    <div id="assess-result"></div>
+  </div>
+</section>
+
+<!-- EVIDENCE -->
+<section id="evidence" class="panel">
+  <h2>Evidence register</h2>
+  <p class="lead">Everything agents and humans produce lands here: QA reports, SOP drafts, validations and reports.</p>
+  <div id="evidence-list"></div>
+</section>
+
+<!-- ROI -->
+<section id="roi" class="panel">
+  <h2>ROI calculator</h2>
+  <p class="lead">Net value, not theoretical productivity. Implementation, maintenance and review costs are all included.</p>
+  <div class="box"><form id="roi-form">
+    <div><label>Process name</label><input name="process" value="Campaign QA"></div>
+    <div><label>Manual hours / week</label><input name="hours_manual_per_week" type="number" step="0.5" value="10"></div>
+    <div><label>Automation reduction %</label><input name="reduction_pct" type="number" value="50"></div>
+    <div><label>Hourly cost</label><input name="hourly_cost" type="number" step="0.01" value="40"></div>
+    <div><label>Implementation cost</label><input name="implementation_cost" type="number" value="2000"></div>
+    <div><label>Maintenance / year</label><input name="maintenance_cost_year" type="number" value="400"></div>
+    <div><label>Review cost / year</label><input name="review_cost_year" type="number" value="300"></div>
+    <div class="full"><button class="primary" type="submit">Calculate</button></div>
+  </form></div>
+  <div id="roi-result"></div>
+</section>
+
+<!-- ADAPTERS -->
+<section id="adapters" class="panel">
+  <h2>Integration adapters</h2>
+  <p class="lead">External integrations sit behind adapters. Every adapter runs in dry-run mode: no external calls, no stored credentials.</p>
+  <div class="tablewrap"><table id="adapter-table"><thead><tr><th>Adapter</th><th>Kind</th><th>Mode</th><th>Capabilities</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<!-- AUDIT -->
+<section id="audit" class="panel">
+  <h2>Audit trail</h2>
+  <p class="lead">Immutable event log of runs, approvals, overrides, rule changes and adapter checks. Overrides are highlighted.</p>
+  <div class="box"><ul class="feed" id="audit-list"></ul></div>
+</section>
+
+</main>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (ts) => ts ? new Date(ts*1000).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}) : "—";
+const ago = (ts) => { if(!ts) return ""; const s = Math.max(0, Date.now()/1000 - ts);
+  if(s<60) return 'just now'; if(s<3600) return Math.floor(s/60)+' min ago'; if(s<86400) return Math.floor(s/3600)+' h ago'; return Math.floor(s/86400)+' d ago'; };
+
+async function api(path, method="GET", body){
+  const res = await fetch(path, {method, headers:{'Content-Type':'application/json'},
+    body: body===undefined?undefined:JSON.stringify(body)});
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+const st = (s) => `<span class="status s-${esc(s)}">${esc(String(s ?? '').replace(/_/g,' '))}</span>`;
+function toast(msg, err=false){
+  const t = $('#toast'); t.innerHTML = msg; t.classList.toggle('err', err); t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), 3800);
+}
+
+const AGENT_NAMES = {qa_agent:'Campaign QA', sop_agent:'SOP Drafting', segmentation_agent:'Audience Validation',
+  readiness_agent:'Deployment Readiness', reporting_agent:'Operations Reporting'};
+const AGENT_ICONS = {
+  qa_agent:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  sop_agent:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+  segmentation_agent:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/>',
+  readiness_agent:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+  reporting_agent:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'};
+const svg = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+const TITLES = {overview:['Overview','Operations at a glance'], agents:['Agent Workspace','Run controlled agents'],
+  runs:['Run Ledger','Decisions and execution history'], qacheck:['Campaign QA','Check a campaign against the rules'],
+  rules:['QA Rules','Configure the QA engine'], segmentation:['Audience','Validate audience files'],
+  readiness:['Readiness','Nine-point release gate'], processes:['Processes','Register and score processes'],
+  evidence:['Evidence','Everything filed by agents and people'], roi:['ROI','Net value of automation'],
+  adapters:['Adapters','Integration boundary (dry-run)'], audit:['Audit Trail','Immutable event log']};
+
+const loaders = { overview: loadOverview, agents: loadAgents, runs: loadRuns, rules: loadRules,
+  qacheck: ()=>{}, processes: loadProcesses, segmentation: ()=>{}, readiness: ()=>{},
+  evidence: loadEvidence, roi: ()=>{}, adapters: loadAdapters, audit: loadAudit };
+
+function tab(name){
+  $$('#nav button').forEach(x=>x.classList.toggle('active', x.dataset.p===name));
+  $$('.panel').forEach(p=>p.classList.toggle('active', p.id===name));
+  const [t, s] = TITLES[name] || [name, ''];
+  $('#crumb').innerHTML = `${esc(t)}<small>${esc(s)}</small>`;
+  window.scrollTo({top:0});
+  loaders[name]?.();
+}
+$$('#nav button').forEach(b => b.onclick = () => tab(b.dataset.p));
+
+// theme toggle (per-viewer convenience only)
+(function(){
+  let saved = null; try{ saved = localStorage.getItem('opsforge-theme'); }catch{}
+  if(saved) document.documentElement.dataset.theme = saved;
+  $('#theme').onclick = () => {
+    const dark = document.documentElement.dataset.theme === 'dark' ||
+      (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try{ localStorage.setItem('opsforge-theme', next); }catch{}
+  };
+})();
+
+async function loadDemo(){
+  try{
+    const r = await api('/api/demo/seed','POST',{});
+    toast(r.seeded ? `<b>Demo data loaded.</b> ${r.summary?.agent_runs ?? ''} agent runs created; one decision is waiting for you.`
+                   : `<b>Demo data already present.</b> Seeding skipped; your existing data is never touched.`);
+    loadOverview();
+  }catch(e){ toast('Demo seed failed: '+esc(e.message), true); }
+}
+
+async function refreshPending(){
+  try{
+    const m = await api('/api/metrics');
+    const c = $('#nav-pending'); c.textContent = m.agent_runs_pending_approval;
+    c.classList.toggle('zero', !m.agent_runs_pending_approval);
+    return m;
+  }catch{ return null; }
+}
+
+async function loadOverview(){
+  const m = await refreshPending(); if(!m) return;
+  const p = m.agent_runs_pending_approval;
+  $('#hero-pill').innerHTML = p
+    ? `<span class="pending-pill"><span class="pulse"></span>${p} decision${p>1?'s':''} waiting for a named approver</span>`
+    : `<span class="pending-pill">All caught up · no decisions waiting</span>`;
+  $('#demo-btn').style.display = m.processes ? 'none' : '';
+  const items = [
+    ['Awaiting approval', p, 't-acc', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', p>0],
+    ['Agent runs', m.agent_runs, 't-brand', AGENT_ICONS.reporting_agent],
+    ['Approvals recorded', m.approvals, 't-ok', '<path d="M20 6L9 17l-5-5"/>'],
+    ['Evidence records', m.evidence_records, 't-info', AGENT_ICONS.sop_agent],
+    ['Processes', m.processes, 't-brand', '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.5 6H15a3 3 0 0 1 3 3v6.5"/>'],
+    ['Maturity assessments', m.assessments, 't-warn', '<path d="M3 17l6-6 4 4 8-8"/>'],
+    ['QA rules enabled', `${m.qa_rules_enabled}/${m.qa_rules}`, 't-ok', '<path d="M4 6h16M4 12h10M4 18h7"/>'],
+    ['Audit events', m.audit_events, 't-info', '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>']];
+  $('#metric-cards').innerHTML = items.map(([l,n,t,ic,alert])=>`
+    <div class="kpi${alert?' alert':''}"${alert?` style="cursor:pointer" onclick="tab('runs')"`:''}><div class="ic ${t}">${svg(ic)}</div>
+    <div><div class="n">${esc(n)}</div><div class="l">${esc(l)}</div></div></div>`).join('');
+  try{
+    const {events} = await api('/api/audit');
+    $('#recent').innerHTML = events.slice(0,7).map(feedItem).join('') || '<li class="empty">No activity yet.</li>';
+  }catch{}
+}
+
+const EVENT_LABELS = {
+  'agent_run.started':['Agent run started','d-brand'], 'agent_run.completed':['Agent run completed','d-ok'],
+  'agent_run.awaiting_approval':['Waiting for human approval','d-acc'], 'agent_step.executed':['Step executed',''],
+  'agent_step.failed':['Step failed','d-bad'], 'approval.granted':['Approval granted','d-ok'],
+  'approval.override':['OVERRIDE: failed result approved','d-bad'], 'approval.rejected':['Rejected by human','d-bad'],
+  'qa.executed':['Campaign QA executed','d-brand'], 'evidence.created':['Evidence filed',''],
+  'deployment.assessed':['Readiness assessed','d-brand'], 'demo.seeded':['Demo environment loaded','d-brand'],
+  'adapter.checked':['Adapter checked (dry-run)',''], 'process.created':['Process registered','d-brand'],
+  'process.assessed':['Process maturity scored','d-brand'], 'sop.generated':['SOP draft generated',''],
+  'segmentation.validated':['Audience validated','d-brand'], 'roi.calculated':['ROI calculated','']};
+function feedItem(e){
+  const [label, dot] = EVENT_LABELS[e.event] || [e.event.replace(/[._]/g,' '), ''];
+  const p = e.payload || {};
+  const bits = [];
+  if(p.approver) bits.push(`by <b>${esc(p.approver)}</b>`);
+  if(p.verdict) bits.push(`verdict ${esc(String(p.verdict).replace(/_/g,' '))}`);
+  if(p.reason) bits.push(`reason: “${esc(p.reason)}”`);
+  if(p.campaign) bits.push(esc(p.campaign));
+  if(p.overall) bits.push(st(p.overall));
+  if(p.tool) bits.push(`<code>${esc(p.tool)}</code>`);
+  if(p.title) bits.push(esc(p.title));
+  if(p.run_id) bits.push(`<a href="#" onclick="showRun('${esc(p.run_id)}');return false;" class="mono">${esc(p.run_id)}</a>`);
+  return `<li class="${e.event==='approval.override'?'override':''}"><span class="dotc ${dot}"></span>
+    <div><div class="ev">${esc(label)}</div><div class="meta">${[...bits, ago(e.ts)].join(' · ')}</div></div></li>`;
+}
+
+async function loadAgents(){
+  const {agents} = await api('/api/agents');
+  $('#agent-list').innerHTML = agents.map(a=>`
+    <div class="box agent">
+      <div class="head"><div class="av">${svg(AGENT_ICONS[a.id] || AGENT_ICONS.reporting_agent)}</div>
+        <div><h3>${esc(a.name)}</h3><div class="id mono">${esc(a.id)}</div></div></div>
+      <div class="role">${esc(a.role)}</div>
+      <ol class="plan">${a.plan.map((s,i)=>`<li><i>${i+1}</i>${esc(s.name)} ${s.requires_approval?'<span class="tag">Human gate</span>':''}</li>`).join('')}</ol>
+      <div class="foot"><button class="primary" onclick="runAgent('${esc(a.id)}', this)">Run sample task</button><span id="out-${esc(a.id)}"></span></div>
+    </div>`).join('');
+}
+async function runAgent(id, btn){
+  if(btn) btn.disabled = true;
+  try{
+    const run = await api(`/api/agents/${id}/run`,'POST',{use_sample:true});
+    $('#out-'+id).innerHTML = `${st(run.status)} <a href="#" onclick="showRun('${esc(run.id)}');return false;">Open run</a>`;
+    toast(run.status==='pending_approval' ? `<b>${esc(AGENT_NAMES[id]||id)}</b> paused at the human gate. Open the run to decide.`
+                                          : `<b>${esc(AGENT_NAMES[id]||id)}</b> run ${esc(run.status)}.`);
+    refreshPending();
+  }catch(e){ toast('Error: '+esc(e.message), true); }
+  if(btn) btn.disabled = false;
+}
+
+async function loadRuns(){
+  const {runs} = await api('/api/runs');
+  runs.sort((a,b)=>(b.status==='pending_approval')-(a.status==='pending_approval') || b.updated_at-a.updated_at);
+  $('#runs-table tbody').innerHTML = runs.map(r=>`
+    <tr><td class="mono">${esc(r.id)}</td><td>${esc(AGENT_NAMES[r.agent_id]||r.agent_id)}</td><td>${st(r.status)}</td><td class="muted">${fmt(r.updated_at)}</td>
+    <td style="text-align:right"><button class="${r.status==='pending_approval'?'primary':'ghost'}" onclick="showRun('${esc(r.id)}')">${r.status==='pending_approval'?'Review':'Inspect'}</button></td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">No runs yet. Start one in the Agent Workspace.</td></tr>';
+  refreshPending();
+}
+
+function verdictBanner(g){
+  if(!g || g.severity==='none') return '';
+  const icon = {block:'!', caution:'?', ok:'✓'}[g.severity] || '?';
+  const d = g.detail || {};
+  const extra = d.failed !== undefined ? `${d.failed} failed of ${d.total_checks} checks` :
+    d.score ? `Score ${esc(d.score)}${(d.failed_points||[]).length?' · failing: '+esc(d.failed_points.join(', ').replace(/_/g,' ')):''}` : '';
+  const msg = g.severity==='block' ? 'Approving this is an override. You must give a written reason, and it is logged separately in the audit trail.'
+    : g.severity==='caution' ? 'Review the highlighted items before deciding.' : 'Checks passed. Your approval is still required.';
+  return `<div class="verdict v-${g.severity}"><div class="vi">${icon}</div><div><b>${esc(g.label)}</b>
+    <span>${extra?extra+' · ':''}${msg}</span></div></div>`;
+}
+
+async function showRun(id){
+  tab('runs');
+  const r = await api(`/api/runs/${id}`);
+  const g = r.gate || {};
+  const pending = r.status==='pending_approval';
+  const gateStep = r.steps.find(s=>s.status==='pending_approval');
+  $('#run-detail').innerHTML = `<div class="box" id="run-box">
+    <div class="runhead"><h3>${esc(AGENT_NAMES[r.agent_id]||r.agent_id)}</h3>${st(r.status)}<span class="muted mono">${esc(r.id)}</span>
+      <span style="flex:1"></span><button class="ghost" onclick="$('#run-detail').innerHTML=''">Close</button></div>
+    ${verdictBanner(g)}
+    <ol class="timeline">${r.steps.map(s=>`<li class="${esc(s.status)}"><span class="node">${s.status==='done'?'✓':s.seq}</span>
+      <div class="row"><b>${esc(s.name)}</b>${s.requires_approval?'<span class="tag">Human gate</span>':''}${st(s.status)}<code class="muted">${esc(s.tool)}</code></div>
+      ${s.output?`<details><summary>View output</summary><pre>${esc(JSON.stringify(s.output,null,2))}</pre></details>`:''}
+      ${s.error?`<div style="color:var(--bad);font-size:12.5px">${esc(s.error)}</div>`:''}</li>`).join('')}</ol>
+    ${(r.approvals||[]).length?`<div class="note">${r.approvals.map(a=>`<b>${esc(a.decision==='approve'?'Approved':'Rejected')}</b> by ${esc(a.approver)} · ${fmt(a.created_at)}${a.comment?` · “${esc(a.comment)}”`:''}`).join('<br>')}</div>`:''}
+    ${pending && gateStep ? `<div class="decision"><h3>Your decision · step ${gateStep.seq}: ${esc(gateStep.name)}</h3>
+      <form id="approve-form" onsubmit="return false">
+        <div><label>Your name (approver)</label><input name="approver" id="approver" required placeholder="Full name" oninput="checkDecision()"></div>
+        <div><label>Comment (optional)</label><input name="comment" placeholder="Context for the record"></div>
+        ${g.override_required?`<div class="full"><label style="color:var(--bad)">Override reason (required, min ${g.override_min_chars} characters)</label>
+          <textarea name="override_reason" id="override" rows="2" placeholder="Why is it acceptable to approve a failed result?" oninput="checkDecision()"></textarea>
+          <div class="counter" id="ocount">0 / ${g.override_min_chars}</div></div>`:''}
+        <div class="full row-actions">
+          <button class="${g.override_required?'bad':'ok'}" id="btn-approve" type="button" disabled onclick="decide('${esc(r.id)}',${gateStep.seq},'approve')">${g.override_required?'Approve with override':'Approve'}</button>
+          <button class="ghost" id="btn-reject" type="button" disabled onclick="decide('${esc(r.id)}',${gateStep.seq},'reject')">Reject</button>
+        </div></form>
+      <div class="muted" style="font-size:12px;margin-top:10px">Your name, decision and any reason are written to the audit trail. Agents cannot approve their own work.</div></div>`:''}
+  </div>`;
+  window._gate = g;
+  loadRuns();
+  $('#run-box').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function checkDecision(){
+  const name = ($('#approver')?.value || '').trim();
+  const g = window._gate || {};
+  let ok = !!name;
+  if(g.override_required){
+    const n = ($('#override')?.value || '').trim().length;
+    const c = $('#ocount'); c.textContent = `${n} / ${g.override_min_chars}`; c.classList.toggle('okc', n>=g.override_min_chars);
+    ok = ok && n >= g.override_min_chars;
+  }
+  $('#btn-approve').disabled = !ok;
+  $('#btn-reject').disabled = !name;
+}
+async function decide(id, seq, decision){
+  const fd = new FormData($('#approve-form'));
+  const body = {approver: fd.get('approver'), comment: fd.get('comment')||''};
+  if(decision==='approve' && fd.get('override_reason')) body.override_reason = fd.get('override_reason');
+  try{
+    await api(`/api/runs/${id}/steps/${seq}/${decision}`,'POST', body);
+    toast(decision==='approve' ? (body.override_reason ? '<b>Override approved.</b> Logged as a separate audit event.' : '<b>Approved.</b> Recorded against your name.')
+                               : '<b>Rejected.</b> Remaining steps cancelled.');
+    showRun(id);
+  }catch(e){ toast(esc(e.message), true); }
+}
+
+async function loadRules(){
+  const {rules} = await api('/api/qa/rules');
+  $('#rules-table tbody').innerHTML = rules.map(r=>`
+    <tr><td><b>${esc(r.name)}</b></td><td>${esc(r.target)}</td><td>${esc(r.rule_type)} <code class="muted">${esc(typeof r.params==='string'?r.params:JSON.stringify(r.params))}</code></td>
+    <td>${r.severity==='error'?'<span class="status s-fail">error</span>':'<span class="status s-warn">warn</span>'}</td>
+    <td>${r.enabled?'<span class="status s-ok">on</span>':'<span class="status s-pending">off</span>'}</td>
+    <td style="text-align:right;white-space:nowrap"><button class="ghost" onclick="toggleRule('${esc(r.id)}',${r.enabled?0:1})">${r.enabled?'Disable':'Enable'}</button>
+        <button class="ghost" onclick="delRule('${esc(r.id)}')">Delete</button></td></tr>`).join('');
+}
+async function toggleRule(id, enabled){ await api(`/api/qa/rules/${id}`,'PUT',{enabled:!!enabled}); toast(enabled?'Rule enabled':'Rule disabled'); loadRules(); }
+async function delRule(id){ if(confirm('Delete this rule?')){ await api(`/api/qa/rules/${id}`,'DELETE'); toast('Rule deleted'); loadRules(); } }
+$('#rule-form').onsubmit = async (e)=>{
+  e.preventDefault(); const fd = new FormData(e.target);
+  let params = {}; try{ params = fd.get('params')?JSON.parse(fd.get('params')):{}; }catch{ return toast('Params must be valid JSON', true); }
+  try{ await api('/api/qa/rules','POST',{name:fd.get('name'),target:fd.get('target'),rule_type:fd.get('rule_type'),severity:fd.get('severity'),params}); toast('Rule added'); loadRules(); e.target.reset(); }
+  catch(err){ toast(esc(err.message), true); }
+};
+
+$('#qa-form').onsubmit = async (e)=>{
+  e.preventDefault(); const fd = new FormData(e.target);
+  const body = { name:fd.get('name'), subject:fd.get('subject')||'', html:fd.get('html')||'',
+    urls: (fd.get('urls')||'').split('\n').map(s=>s.trim()).filter(Boolean),
+    personalization: fd.get('personalization')||'', tracking: fd.get('tracking')==='true',
+    consent: fd.get('consent')==='true', create_evidence:true };
+  try{
+    const rep = await api('/api/qa/email','POST',body);
+    const sm = rep.summary || {};
+    $('#qa-result').innerHTML = `<div class="box"><div class="runhead"><h3>${esc(rep.campaign)}</h3>${st(rep.overall)}
+      <span class="muted">${sm.total_checks ?? rep.checks.length} checks${sm.failed!==undefined?` · ${sm.failed} failed`:''}</span></div>
+      <div class="tablewrap"><table><thead><tr><th>Check</th><th>Severity</th><th>Result</th><th>Detail</th></tr></thead><tbody>
+      ${rep.checks.map(c=>`<tr><td><b>${esc(c.rule)}</b></td><td>${esc(c.severity)}</td><td>${st(c.status)}</td><td class="muted">${esc(c.detail)}</td></tr>`).join('')}
+      </tbody></table></div><div class="muted" style="font-size:12px;margin-top:10px">Filed to the evidence register.</div></div>`;
+  }catch(err){ toast(esc(err.message), true); }
+};
+
+async function loadProcesses(){
+  const {processes} = await api('/api/processes');
+  $('#process-table tbody').innerHTML = processes.map(p=>`
+    <tr><td><b>${esc(p.name)}</b><div class="muted" style="font-size:12px">${esc(p.description||'')}</div></td><td>${esc(p.owner||'—')}</td><td class="mono muted">${esc(p.id)}</td>
+    <td style="text-align:right;white-space:nowrap"><button class="ghost" onclick="assess('${esc(p.id)}','${esc(p.name)}')">Assess</button>
+        <button class="ghost" onclick="sop('${esc(p.id)}')">SOP draft</button></td></tr>`).join('')
+    || '<tr><td colspan="4" class="empty">No processes registered yet.</td></tr>';
+}
+function assess(id,name){
+  $('#assess-area').classList.remove('hidden'); $('#assess-name').textContent = name; $('#assess-result').innerHTML='';
+  $('#assess-area').scrollIntoView({behavior:'smooth'});
+  $('#assess-form').onsubmit = async (e)=>{
+    e.preventDefault(); const fd = new FormData(e.target);
+    const scores = {}; ['documentation','standardization','automation','measurement','governance'].forEach(k=>scores[k]=+fd.get(k));
+    try{
+      const a = await api(`/api/processes/${id}/assess`,'POST',scores);
+      $('#assess-result').innerHTML = `<div class="note accent">Maturity: <b>${esc(a.level)}</b> · ${a.total}/25 &nbsp;<button class="ghost" onclick="sop('${esc(id)}')">Generate SOP draft</button></div>`;
+    }catch(err){ toast(esc(err.message), true); }
+  };
+}
+async function sop(id){
+  try{
+    const s = await api('/api/sop/generate','POST',{process_id:id});
+    $('#assess-area').classList.remove('hidden');
+    $('#assess-result').innerHTML += `<pre>${esc(s.sop_markdown)}</pre>`;
+    toast('SOP draft generated');
+  }catch(err){ toast(esc(err.message), true); }
+}
+$('#process-form').onsubmit = async (e)=>{
+  e.preventDefault(); const fd = new FormData(e.target);
+  try{ await api('/api/processes','POST',{name:fd.get('name'),owner:fd.get('owner'),description:fd.get('description')}); toast('Process registered'); loadProcesses(); e.target.reset(); }
+  catch(err){ toast(esc(err.message), true); }
+};
+
+$('#seg-form').onsubmit = async (e)=>{
+  e.preventDefault(); const fd = new FormData(e.target);
+  const body = {csv:fd.get('csv')}; if(fd.get('volume_cap')) body.volume_cap = +fd.get('volume_cap');
+  try{
+    const r = await api('/api/segmentation/validate','POST',body);
+    const sm = r.summary || {};
+    $('#seg-result').innerHTML = `<div class="box"><div class="runhead"><h3>Audience result</h3>${st(r.overall)}</div>
+      <div class="grid g4" style="margin-bottom:14px">${Object.entries(sm).filter(([k,v])=>typeof v!=='object').map(([k,v])=>`<div class="kpi"><div><div class="n">${esc(v)}</div><div class="l">${esc(k.replace(/_/g,' '))}</div></div></div>`).join('')}</div>
+      ${r.issues.length?`<div class="tablewrap"><table><thead><tr><th>Issue</th><th>Line</th><th>Detail</th></tr></thead><tbody>
+      ${r.issues.slice(0,20).map(i=>`<tr><td>${st(i.issue)}</td><td>${i.line??'—'}</td><td class="muted">${esc(i.detail)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="note">No issues found.</div>'}</div>`;
+  }catch(err){ toast(esc(err.message), true); }
+};
+
+$('#rdy-form').onsubmit = async (e)=>{
+  e.preventDefault();
+  const checks = {}; $$('#rdy-form input[type=checkbox]').forEach(c=>checks[c.name]=c.checked);
+  try{
+    const r = await api('/api/deployment/assess','POST',{checks});
+    $('#rdy-result').innerHTML = `<div class="box"><div class="runhead"><h3>Readiness ${esc(r.score)}</h3>${st(r.status)}</div>
+      <div class="note ${r.status==='ready'?'':'accent'}">${esc(r.recommendation)}</div>
+      <div class="grid g3">${Object.entries(r.checks).map(([k,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px"><span>${esc(k.replace(/_/g,' '))}</span>${st(v)}</div>`).join('')}</div></div>`;
+  }catch(err){ toast(esc(err.message), true); }
+};
+
+async function loadEvidence(){
+  const {evidence} = await api('/api/evidence');
+  $('#evidence-list').innerHTML = evidence.length ? `<div class="grid g3">${evidence.map(e=>`
+    <div class="box" style="margin:0"><div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span class="tag blue">${esc(String(e.kind).replace(/_/g,' '))}</span><span class="muted" style="font-size:12px">${ago(e.created_at)}</span></div>
+    <h3 style="margin-bottom:4px">${esc(e.title)}</h3><div class="muted mono" style="font-size:11px">${esc(e.id)}</div>
+    <details><summary>View payload</summary><pre>${esc(JSON.stringify(e.payload,null,2)).slice(0,2000)}</pre></details></div>`).join('')}</div>`
+    : '<div class="box empty">No evidence yet. Run an agent or a QA check.</div>';
+}
+
+$('#roi-form').onsubmit = async (e)=>{
+  e.preventDefault(); const fd = new FormData(e.target);
+  const body = {}; fd.forEach((v,k)=>body[k]=+v); body.process = fd.get('process');
+  try{
+    const r = await api('/api/roi/calculate','POST',body);
+    const tiles = [['Hours released / week', r.hours_released_per_week,'t-brand'],['Gross annual saving', r.gross_annual_saving,'t-info'],
+      ['Net first-year value', r.net_first_year_value, r.net_first_year_value>=0?'t-ok':'t-warn'],['Payback', r.payback_months===null?'—':r.payback_months+' months','t-acc']];
+    $('#roi-result').innerHTML = `<div class="grid g4">${tiles.map(([l,v,t])=>`<div class="kpi"><div class="ic ${t}">${svg('<path d="M3 17l6-6 4 4 8-8"/>')}</div><div><div class="n">${esc(v)}</div><div class="l">${esc(l)}</div></div></div>`).join('')}</div>`;
+  }catch(err){ toast(esc(err.message), true); }
+};
+
+async function loadAdapters(){
+  const {adapters} = await api('/api/adapters');
+  $('#adapter-table tbody').innerHTML = adapters.map(a=>`
+    <tr><td><b>${esc(a.name)}</b></td><td>${esc(a.kind)}</td><td>${st(a.mode)}</td>
+    <td class="muted">${esc((a.capabilities||[]).join(', '))}</td><td>${st(a.status||'unknown')}</td>
+    <td style="text-align:right"><button class="ghost" onclick="checkAdapter('${esc(a.name)}')">Check</button></td></tr>`).join('');
+}
+async function checkAdapter(name){ try{ await api(`/api/adapters/${name}/check`,'POST',{}); toast('Adapter checked (dry-run)'); }catch(err){ toast(esc(err.message), true); } loadAdapters(); }
+
+async function loadAudit(){
+  const {events} = await api('/api/audit');
+  $('#audit-list').innerHTML = events.map(feedItem).join('') || '<li class="empty">No events yet.</li>';
+}
+
+// init
+(async ()=>{
+  try{ const h = await api('/api/health'); $('#version').textContent = 'v'+h.version; }catch{}
+  loadOverview();
+})();
+</script>
+</body>
+</html>

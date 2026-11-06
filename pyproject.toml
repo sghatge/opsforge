@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opsforge"
+version = "0.4.0"
+description = "OPSFORGE — Enterprise AI Operations & Process Excellence Platform (local MVP)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "All rights reserved" }
+authors = [{ name = "Sangram" }]
+dependencies = []
+
+[project.scripts]
+opsforge = "opsforge.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["opsforge*"]
+
+[tool.setuptools.package-data]
+opsforge = ["static/*.html"]
