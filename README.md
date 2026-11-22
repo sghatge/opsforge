@@ -50,7 +50,7 @@ The override is then recorded with the approver, verdict and reason, and highlig
 
 ## Run it
 
-Requirements: **Python 3.10+**. The default MVP needs no third-party packages. Optional Gemini research support: `pip install 'opsforge[gemini]'`.
+Requirements: **Python 3.10+**. No third-party packages are required. For a local Gemini session, run `./run-gemini.ps1`; it requests the API key in a hidden prompt and clears it when the server stops.
 
 ```bash
 git clone https://github.com/sghatge/opsforge.git
@@ -79,7 +79,7 @@ python -m unittest discover -s tests -t .
 ## Honest limitations
 
 - This is a **local MVP**, not a production deployment.
-- The default provider is deterministic. Optional Gemini support uses the Google Gen AI Interactions API when `OPSFORGE_LLM_PROVIDER=gemini` and a server-side `GEMINI_API_KEY` is configured. Set `GEMINI_MODEL` to override the default model. The Research Agent ranks only source text supplied in its run; NotebookLM is not queried automatically. See [Research Agent v0.1](docs/RESEARCH_AGENT_V0_1.md) and [Gemini API setup](https://ai.google.dev/gemini-api/docs/get-started).
+- The default provider is deterministic. The optional Gemini provider uses the Google Gen AI Interactions API through Python's standard library when `OPSFORGE_LLM_PROVIDER=gemini` and a server-side `GEMINI_API_KEY` is configured. Set `GEMINI_MODEL` to override the default (`gemini-3.6-flash`). The Research Agent ranks only source text supplied in its run; NotebookLM is not queried automatically. See [Research Agent v0.1](docs/RESEARCH_AGENT_V0_1.md) and [Gemini API setup](https://ai.google.dev/gemini-api/docs/get-started).
 - **Adobe Campaign connectivity is not implemented.** The adapter is a dry-run interface stub; no credentials are read or stored.
 - No authentication, multi-user access or role-based access yet.
 - A minimum-length reason stops empty overrides, not meaningless ones. Two-person approval for overrides is on the roadmap.
