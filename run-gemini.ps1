@@ -1,6 +1,10 @@
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = $PSScriptRoot
+$port = 8766
+if (-not [string]::IsNullOrWhiteSpace($env:OPSFORGE_PORT)) {
+    $port = [int]$env:OPSFORGE_PORT
+}
 $embeddedPython = Join-Path $repoRoot '.python-runtime\python.exe'
 $useEmbeddedPython = Test-Path -LiteralPath $embeddedPython
 
@@ -39,7 +43,7 @@ try {
     try {
         if ($useEmbeddedPython) {
             $bootstrap = "import sys; from opsforge.__main__ import main; main()"
-            & $pythonPath -c $bootstrap --demo --db .opsforge-gemini.db --port 8765
+            & $pythonPath -c $bootstrap --demo --db .opsforge-gemini.db --port $port
         } else {
             & $pythonPath -m opsforge --demo --db .opsforge-gemini.db --port 8765
         }
