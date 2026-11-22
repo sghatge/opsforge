@@ -1,12 +1,12 @@
-# OPSFORGE — Architecture (v0.3)
+# OPSFORGE — Architecture (v0.4)
 
 ## Principles
 
 1. **Modular services.** Every capability is an importable service module
    with a plain-function API — the HTTP layer is a thin adapter over it.
-2. **Standard library only.** `http.server`, `sqlite3`, `json`, `csv`, `re`,
-   `unittest`. Nothing else. Deployment is "unzip and run Python".
-3. **Everything is evidence.** Processes, QA reports, SOP drafts, agent runs,
+2. **Small core, optional integrations.** The local MVP uses Python's standard
+   library. The optional Gemini extra adds the Google Gen AI SDK.
+3. **Everything is evidence.*** Processes, QA reports, SOP drafts, agent runs,
    approvals and configuration changes are all rows in the database, each
    paired with audit events.
 4. **Human-controlled AI.** Agents execute plans; humans approve sensitive
@@ -30,6 +30,7 @@ Service modules (services/)
   roi.py          net-value ROI model
   adapters.py     mock CRM + Adobe Campaign dry-run stub
   agents.py       AGENT CATALOG · TOOL REGISTRY · orchestrator · approvals
+  research.py     bounded lexical retrieval over supplied source text
         │
         ▼
 Database (db.py)  SQLite · thread-safe · JSON-aware helpers · audit log
@@ -37,7 +38,7 @@ Database (db.py)  SQLite · thread-safe · JSON-aware helpers · audit log
 
 ## Agent layer
 
-- **Agent catalog** — five agents, each with a *fixed plan*: an ordered list
+- **Agent catalog** — six agents, each with a *fixed plan*: an ordered list
   of steps bound to named tools. Plans are code-reviewed artifacts, not
   improvised at runtime.
 - **Tool registry** — tools are plain functions `(db, task, previous) -> dict`
@@ -65,10 +66,13 @@ run `rejected`. All decisions are audit-logged with the approver's name.
 
 ### AI provider
 
-`LLMProvider` interface with a `DeterministicLLM` implementation
-(template-driven, no network, no randomness). Selected via
-`OPSFORGE_LLM_PROVIDER` (default `deterministic`). Future providers register
-in the `PROVIDERS` dict — no other code changes.
+`LLMProvider` has a deterministic implementation (default) and an optional
+Gemini Interactions API implementation, selected with
+`OPSFORGE_LLM_PROVIDER=gemini`. Gemini requires the optional
+`opsforge[gemini]` extra and server-side `GEMINI_API_KEY`; `GEMINI_MODEL`
+can override the model. Gemini requests use `store=False`. The Research Agent
+ranks only source text provided in its run and returns source IDs/URLs with its
+answer. Retrieval is lexical and does not connect to NotebookLM automatically.
 
 ## Integration adapters
 
@@ -79,8 +83,10 @@ External systems are reachable only through adapters registered in
 - `adobe_campaign` — interface stub in permanent dry-run; live calls raise
   `AdapterError` by design until real, server-side configuration exists.
 
-Connectivity checks persist status and write audit events; no external
-network call is possible in v0.3.
+Adapter connectivity checks persist status and write audit events. The Adobe
+Campaign adapter remains a dry-run stub; it makes no live calls. Optional
+Gemini inference is a separate provider path and sends supplied run context to
+Google's Gemini API.
 
 ## Data model (SQLite)
 
