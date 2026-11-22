@@ -1,4 +1,4 @@
-# OPSFORGE — API Reference (v0.3)
+# OPSFORGE — API Reference (v0.4)
 
 All endpoints accept and return JSON. Errors: `400` validation,
 `404` unknown resource, `500` internal.
@@ -42,6 +42,24 @@ All endpoints accept and return JSON. Errors: `400` validation,
 | GET | `/api/runs/{id}` | Full run detail: steps, outputs, approvals |
 | POST | `/api/runs/{id}/steps/{seq}/approve` | Approve a gated step. Requires `approver` (a named human) |
 | POST | `/api/runs/{id}/steps/{seq}/reject` | Reject — cancels the step and the run |
+
+Research Agent task example (sources must include reviewed text; NotebookLM is not fetched automatically):
+
+```json
+{
+  "question": "What are the main risks in this source set?",
+  "top_k": 5,
+  "sources": [
+    {"title": "Reviewed reference", "url": "https://example.org/reference", "text": "Reviewed source text"}
+  ]
+}
+```
+
+For Gemini inference, install `opsforge[gemini]`, set
+`OPSFORGE_LLM_PROVIDER=gemini` and `GEMINI_API_KEY` in the server
+environment. `GEMINI_MODEL` is optional. Requests use the stateless
+Interactions API mode (`store=false`). The default deterministic provider
+remains available without third-party dependencies.
 
 Run statuses: `running`, `pending_approval`, `completed`, `failed`, `rejected`.
 Step statuses: `pending`, `pending_approval`, `running`, `done`, `failed`, `cancelled`.
