@@ -13,7 +13,7 @@ authors = [{ name = "Sangram" }]
 dependencies = []
 
 [project.optional-dependencies]
-gemini = ["google-genai>=1.0.0"]
+gemini = ["google-genai>=2.30.1"]
 
 [project.scripts]
 opsforge = "opsforge.__main__:main"
