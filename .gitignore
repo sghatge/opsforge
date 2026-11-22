@@ -5,6 +5,7 @@ __pycache__/
 *.db-wal
 *.db-shm
 .venv/
+.python-runtime/
 venv/
 *.egg-info/
 build/
