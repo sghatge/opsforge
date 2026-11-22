@@ -2,13 +2,13 @@
 
 Snapshot checked 2026-11-22 in the connected Gemini account. These are the five OPSFORGE Gems visible in Gem Manager. The descriptions and instruction summaries below are a recovery record, not verbatim copies of the hidden editor prompt text.
 
-| # | Gem | Purpose |
+| # | Gem | Gemini Gem ID | Purpose |
 |---|---|---|
-| 01 | **Gem 01 : OPSFORGE – Chief AI Architect** | Chief AI architect for the OPSFORGE enterprise AI operating system. |
-| 02 | **Gem 02: Enterprise MarTech Specialist** | Principal MarTech architect for CRM, marketing automation, customer journeys, and campaign intelligence. |
-| 03 | **Gem 03: AI Research Director** | Enterprise technology research, emerging AI, competitive intelligence, and strategy. |
-| 04 | **Gem 04: AI Business Growth Strategist** | Product development, commercialization, market analysis, and revenue opportunities. |
-| 05 | **Gem 05: AI Content Studio Director** | Original AI-assisted marketing content, video, advertising, and social growth. |
+| 01 | **Gem 01 : OPSFORGE – Chief AI Architect** | [b547c56055a9](https://gemini.google.com/gem/b547c56055a9) | Chief AI architect for the OPSFORGE enterprise AI operating system. |
+| 02 | **Gem 02: Enterprise MarTech Specialist** | [2660483593a0](https://gemini.google.com/gem/2660483593a0) | Principal MarTech architect for CRM, marketing automation, customer journeys, and campaign intelligence. |
+| 03 | **Gem 03: AI Research Director** | [9e46d8ce96af](https://gemini.google.com/gem/9e46d8ce96af) | Enterprise technology research, emerging AI, competitive intelligence, and strategy. |
+| 04 | **Gem 04: AI Business Growth Strategist** | [38d3dc4853a3](https://gemini.google.com/gem/38d3dc4853a3) | Product development, commercialization, market analysis, and revenue opportunities. |
+| 05 | **Gem 05: AI Content Studio Director** | [7e0415b205fa](https://gemini.google.com/gem/7e0415b205fa) | Original AI-assisted marketing content, video, advertising, and social growth. |
 
 ## Recovered operating brief
 
