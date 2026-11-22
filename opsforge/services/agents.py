@@ -81,6 +81,7 @@ class GeminiLLM(LLMProvider):
         client = genai.Client(api_key=api_key)
         response = client.interactions.create(
             model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
+            store=False,
             input=prompt,
         )
         output = getattr(response, "output_text", None)
