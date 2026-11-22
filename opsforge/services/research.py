@@ -13,6 +13,10 @@ def retrieve(question: str, sources: list[dict], top_k: int = 5) -> dict:
         raise ValueError("Research task requires a non-empty 'question'.")
     if not isinstance(sources, list) or not sources:
         raise ValueError("Research task requires a non-empty 'sources' list.")
+    if len(sources) > 100:
+        raise ValueError("At most 100 source records may be supplied per run.")
+    if len(question) > 2000:
+        raise ValueError("Research question must be 2,000 characters or fewer.")
     if not 1 <= int(top_k) <= 10:
         raise ValueError("'top_k' must be between 1 and 10.")
 
@@ -26,6 +30,7 @@ def retrieve(question: str, sources: list[dict], top_k: int = 5) -> dict:
         text = str(source.get("text", "")).strip()
         if not title or not text:
             continue
+        text = text[:20000]
         terms = _terms(title + " " + text)
         overlap = sum(1 for term in query_terms if term in terms)
         score = overlap / max(1, len(query_terms))
