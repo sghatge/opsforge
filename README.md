@@ -35,7 +35,7 @@ The override is then recorded with the approver, verdict and reason, and highlig
 
 | Capability | Description |
 | --- | --- |
-| Agent workspace | Five registered agents: Campaign QA, SOP Drafting, Audience Validation, Deployment Readiness, Operations Reporting |
+| Agent workspace | Six registered agents, including an OPSFORGE Research Agent with bounded source retrieval and cited synthesis |
 | Human approval workflow | Approval-gated steps pause runs until a named person decides |
 | Override control (v0.4) | Failed results need a written reason (min 15 chars); logged as `approval.override` |
 | Campaign QA engine | Rule-driven checks; rules are data, editable at runtime without code changes |
@@ -50,7 +50,7 @@ The override is then recorded with the approver, verdict and reason, and highlig
 
 ## Run it
 
-Requirements: **Python 3.10+**. No third-party packages.
+Requirements: **Python 3.10+**. The default MVP needs no third-party packages. Optional Gemini research support: `pip install 'opsforge[gemini]'`.
 
 ```bash
 git clone https://github.com/sghatge/opsforge.git
@@ -79,7 +79,7 @@ python -m unittest discover -s tests -t .
 ## Honest limitations
 
 - This is a **local MVP**, not a production deployment.
-- The AI layer uses a **deterministic, template-driven provider**; there are no external LLM calls. A real provider can be plugged in via `OPSFORGE_LLM_PROVIDER` (see [docs/AGENT_FRAMEWORK.md](docs/AGENT_FRAMEWORK.md)).
+- The default provider is deterministic. Optional Gemini support uses the Google Gen AI Interactions API when `OPSFORGE_LLM_PROVIDER=gemini` and a server-side `GEMINI_API_KEY` is configured. Set `GEMINI_MODEL` to override the default model. The Research Agent ranks only source text supplied in its run; NotebookLM is not queried automatically. See [Research Agent v0.1](docs/RESEARCH_AGENT_V0_1.md) and [Gemini API setup](https://ai.google.dev/gemini-api/docs/get-started).
 - **Adobe Campaign connectivity is not implemented.** The adapter is a dry-run interface stub; no credentials are read or stored.
 - No authentication, multi-user access or role-based access yet.
 - A minimum-length reason stops empty overrides, not meaningless ones. Two-person approval for overrides is on the roadmap.
@@ -103,7 +103,7 @@ opsforge/
 ├── opsforge/
 │   ├── __init__.py · __main__.py · server.py · db.py
 │   ├── services/            # processes, sop, qa, roi, segmentation,
-│   │                        # readiness, adapters, agents, demo
+│   │                        # readiness, adapters, agents, research, demo
 │   └── static/index.html    # dashboard
 ├── docs/
 │   ├── index.html           # project page (GitHub Pages)
