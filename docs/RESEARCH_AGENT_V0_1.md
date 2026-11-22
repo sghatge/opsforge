@@ -16,7 +16,7 @@ NotebookLM notebooks and Gemini Gems are separate Google product surfaces. This 
 }
 ```
 
-Set `OPSFORGE_LLM_PROVIDER=gemini` and `GEMINI_API_KEY` in the server environment for Gemini. Optional `GEMINI_MODEL` selects the model; default is `gemini-3.8-flash`. If no Gemini key is configured, keep the deterministic provider for safe local demonstrations. Never put keys in the repository or task payloads.
+Set `OPSFORGE_LLM_PROVIDER=gemini` and `GEMINI_API_KEY` in the server environment for Gemini. Optional `GEMINI_MODEL` selects the model; default is `gemini-3.6-flash`. The `run-gemini.ps1` helper accepts the key through a hidden prompt and clears it when the server stops. If no Gemini key is configured, keep the deterministic provider for safe local demonstrations. Never put keys in the repository or task payloads.
 
 ## Limits
 - Retrieval is lexical, not embeddings or semantic reranking.
