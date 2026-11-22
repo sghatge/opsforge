@@ -12,6 +12,9 @@ license = { text = "All rights reserved" }
 authors = [{ name = "Sangram" }]
 dependencies = []
 
+[project.optional-dependencies]
+gemini = ["google-genai>=1.0.0"]
+
 [project.scripts]
 opsforge = "opsforge.__main__:main"
 
