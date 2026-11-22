@@ -50,7 +50,7 @@ The override is then recorded with the approver, verdict and reason, and highlig
 
 ## Run it
 
-Requirements: **Python 3.10+**. No third-party packages are required. For a local Gemini session, run `./run-gemini.ps1`; it requests the API key in a hidden prompt and clears it when the server stops.
+Requirements: **Python 3.10+**. No third-party packages are required. For a local Gemini session, run `./run-gemini.ps1`; it requests the API key in a hidden prompt, starts the Gemini server on port 8766, and clears the key when the server stops.
 
 ```bash
 git clone https://github.com/sghatge/opsforge.git
