@@ -20,6 +20,8 @@ from __future__ import annotations
 import json
 import os
 import threading
+import urllib.error
+import urllib.request
 
 from ..db import Database, new_id, now
 from . import qa as qa_service
@@ -56,17 +58,13 @@ class DeterministicLLM(LLMProvider):
 
 
 class GeminiLLM(LLMProvider):
-    """Optional Google Gen AI Interactions API provider."""
+    """Google Gen AI Interactions API provider using the standard library."""
     name = "gemini"
 
     def compose(self, instruction: str, context: dict) -> str:
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise ValueError("GEMINI_API_KEY is required when OPSFORGE_LLM_PROVIDER=gemini.")
-        try:
-            from google import genai
-        except ImportError as exc:
-            raise RuntimeError("Install optional Gemini dependency: pip install 'opsforge[gemini]'.") from exc
         if instruction == "OPSFORGE Research Brief":
             payload = json.dumps(context.get("sources", []), ensure_ascii=False)
             prompt = (
@@ -78,16 +76,34 @@ class GeminiLLM(LLMProvider):
             )
         else:
             prompt = instruction + "\n\nContext (JSON):\n" + json.dumps(context, ensure_ascii=False, default=str)
-        client = genai.Client(api_key=api_key)
-        response = client.interactions.create(
-            model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
-            store=False,
-            input=prompt,
+        request_body = json.dumps({
+            "model": os.environ.get("GEMINI_MODEL", "gemini-3.6-flash"),
+            "store": False,
+            "input": prompt,
+        }).encode("utf-8")
+        request = urllib.request.Request(
+            "https://generativelanguage.googleapis.com/v1beta/interactions",
+            data=request_body,
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+            method="POST",
         )
-        output = getattr(response, "output_text", None)
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            raise RuntimeError(f"Gemini API request failed with HTTP {exc.code}.") from None
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Gemini API connection failed: {exc.reason}.") from None
+        chunks = []
+        for step in payload.get("steps", []):
+            if step.get("type") == "model_output":
+                for part in step.get("content", []):
+                    if part.get("type") == "text" and part.get("text"):
+                        chunks.append(part["text"])
+        output = "\\n".join(chunks).strip()
         if not output:
             raise RuntimeError("Gemini returned no text output.")
-        return output.strip()
+        return output
 
 
 PROVIDERS: dict[str, LLMProvider] = {p.name: p for p in (DeterministicLLM(), GeminiLLM())}
