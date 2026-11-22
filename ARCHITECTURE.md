@@ -4,8 +4,8 @@
 
 1. **Modular services.** Every capability is an importable service module
    with a plain-function API — the HTTP layer is a thin adapter over it.
-2. **Small core, optional integrations.** The local MVP uses Python's standard
-   library. The optional Gemini extra adds the Google Gen AI SDK.
+2. **Small core, optional integrations.** The local MVP and Gemini API client
+   use Python's standard library; no third-party dependency is required.
 3. **Everything is evidence.*** Processes, QA reports, SOP drafts, agent runs,
    approvals and configuration changes are all rows in the database, each
    paired with audit events.
@@ -69,8 +69,8 @@ run `rejected`. All decisions are audit-logged with the approver's name.
 `LLMProvider` has a deterministic implementation (default) and an optional
 Gemini Interactions API implementation, selected with
 `OPSFORGE_LLM_PROVIDER=gemini`. Gemini requires the optional
-`opsforge[gemini]` extra and server-side `GEMINI_API_KEY`; `GEMINI_MODEL`
-can override the model. Gemini requests use `store=False`. The Research Agent
+server-side `GEMINI_API_KEY`; `GEMINI_MODEL` can override the model. Gemini
+requests use `store=False`. The Research Agent
 ranks only source text provided in its run and returns source IDs/URLs with its
 answer. Retrieval is lexical and does not connect to NotebookLM automatically.
 
