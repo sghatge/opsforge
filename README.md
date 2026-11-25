@@ -133,3 +133,10 @@ Built by **Sangram Ghatge**, Marketing Ops & CRM technology lead (Adobe Campaign
 ## License
 
 Copyright © 2026 Sangram Ghatge. All rights reserved. The code is published for viewing and evaluation; see [LICENSE](LICENSE).
+
+
+## Streamlit showcase
+
+A public Streamlit showcase is available in `streamlit_app.py`. It uses synthetic data only and documents the OPSFORGE operating model, proposed agent organisation, governance controls and 30-day roadmap. It does not connect to Paperclip or execute agents.
+
+Deployment instructions: [docs/STREAMLIT_DEPLOYMENT.md](docs/STREAMLIT_DEPLOYMENT.md). Deploy from Streamlit Community Cloud using branch `main` and entrypoint `streamlit_app.py`.
