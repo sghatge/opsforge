@@ -47,7 +47,7 @@ The override is then recorded with the approver, verdict and reason, and highlig
 
 | Capability | Description |
 | --- | --- |
-| Agent workspace | Six registered agents, including an OPSFORGE Research Agent with bounded source retrieval and cited synthesis |
+| Agent workspace | Seven registered agents, including an OPSFORGE Research Agent with bounded source retrieval and cited synthesis |
 | Human approval workflow | Approval-gated steps pause runs until a named person decides |
 | Override control (v0.4) | Failed results need a written reason (min 15 chars); logged as `approval.override` |
 | Campaign QA engine | Rule-driven checks; rules are data, editable at runtime without code changes |
