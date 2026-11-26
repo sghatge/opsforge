@@ -225,6 +225,16 @@ AGENT_CATALOG: dict[str, dict] = {
             {"name": "File report evidence", "tool": "evidence.create", "requires_approval": False},
         ],
     },
+    "signal_triage_agent": {
+        "id": "signal_triage_agent",
+        "name": "Signal Intelligence Agent",
+        "role": "Validates an external signal, files evidence and routes high-risk items through the existing human approval ledger.",
+        "plan": [
+            {"name": "Assess incoming signal", "tool": "signal.assess", "requires_approval": False},
+            {"name": "File signal evidence", "tool": "evidence.create", "requires_approval": False},
+            {"name": "Human risk decision", "tool": "signal.signoff", "requires_approval": True},
+        ],
+    },
     "research_agent": {
         "id": "research_agent",
         "name": "OPSFORGE Research Agent",
@@ -360,6 +370,59 @@ def _tool_research_compose(db: Database, task: dict, prev) -> dict:
     }
 
 
+
+def _tool_signal_assess(db: Database, task: dict, _prev) -> dict:
+    """Validate and classify a signal; upstream high-risk labels cannot be downgraded."""
+    headline = str(task.get("headline", "")).strip()[:240]
+    summary = str(task.get("summary", "")).strip()[:1200]
+    source = str(task.get("source", "")).strip()[:120]
+    url = str(task.get("url", "")).strip()[:1000]
+    if not headline or not source:
+        raise ValueError("Signal requires non-empty headline and source.")
+    if url and not url.startswith(("https://", "http://")):
+        raise ValueError("Signal URL must use HTTP or HTTPS.")
+    text = (headline + " " + summary).lower()
+    approval_terms = ("outage", "service disruption", "vulnerability", "security incident",
+                      "sftp", "sla breach", "data exposure", "production failure")
+    notify_terms = ("capacity", "workload", "sla", "campaign", "deliverability",
+                    "adobe campaign", "salesforce", "crm", "incident")
+    claimed = str(task.get("classification", "")).strip().lower()
+    if claimed == "approve" or any(term in text for term in approval_terms):
+        classification = "Approve"
+    elif claimed == "notify" or any(term in text for term in notify_terms):
+        classification = "Notify"
+    else:
+        classification = "Autonomous"
+    return {
+        "headline": headline, "summary": summary, "source": source, "url": url,
+        "classification": classification,
+        "risk_reason": "High-risk keyword or upstream escalation" if classification == "Approve"
+                       else ("Operational relevance detected" if classification == "Notify"
+                             else "Information-only signal"),
+        "review_required": classification == "Approve",
+        "execution_enabled": False,
+    }
+
+
+def _tool_signal_signoff(db: Database, task: dict, prev) -> dict:
+    """Record a human risk decision only; never execute an external action."""
+    assessment_row = db.query_one(
+        "SELECT output FROM agent_steps WHERE run_id = ? AND tool = 'signal.assess' AND status = 'done' ORDER BY seq LIMIT 1",
+        (_current_run_id(db),),
+    )
+    assessed = json.loads(assessment_row["output"]) if assessment_row else {}
+    if assessed.get("classification") != "Approve":
+        return {"decision": "no_human_gate_required", "classification": assessed.get("classification"),
+                "external_action": "not_executed"}
+    approval = db.query_one(
+        "SELECT * FROM approvals WHERE run_id = ? AND decision = 'approve' ORDER BY created_at DESC LIMIT 1",
+        (_current_run_id(db),),
+    )
+    return {"decision": "approved_by_human", "approver": approval["approver"] if approval else None,
+            "classification": "Approve", "external_action": "not_executed",
+            "note": "Approval records the risk decision only; it does not authorize an external side effect."}
+
+
 TOOLS = {
     "qa.run_email_qa": _tool_qa_email,
     "evidence.create": _tool_evidence_create,
@@ -371,7 +434,7 @@ TOOLS = {
     "deployment.signoff": _tool_deployment_signoff,
     "metrics.collect": _tool_metrics,
     "report.compose": _tool_report_compose,
-    "research.retrieve": _tool_research_retrieve,
+    "signal.assess": _tool_signal_assess,\n    "signal.signoff": _tool_signal_signoff,\n    "research.retrieve": _tool_research_retrieve,
     "research.compose": _tool_research_compose,
 }
 
@@ -418,7 +481,7 @@ def start_run(db: Database, agent_id: str, task: dict) -> dict:
             " input, output, error, started_at, finished_at)"
             " VALUES (?, ?, ?, ?, ?, ?, 'pending', 'null', 'null', '', NULL, NULL)",
             (new_id("stp"), run_id, seq, step["name"], step["tool"],
-             1 if step["requires_approval"] else 0),
+             1 if (step["requires_approval"] and (step["tool"] != "signal.signoff" or str(task.get("classification", "")).strip().lower() == "approve")) else 0),
         )
     db.audit("agent_run.started", {"run_id": run_id, "agent_id": agent_id})
     _advance(db, run_id)
