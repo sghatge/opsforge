@@ -5,6 +5,7 @@ It does not connect to Paperclip or execute agents.
 """
 from datetime import datetime, timezone
 import streamlit as st
+from signal_pipeline import render_signal_pipeline
 
 st.set_page_config(page_title="OPSFORGE | AI Operations Command Centre", page_icon="🛡️", layout="wide", initial_sidebar_state="expanded")
 HERO_IMAGE = "https://thumbs.wbm.im/pw/medium/c7251a6cb58068b11a9cf1163e793a48.jpg"
@@ -46,7 +47,7 @@ def section_banner(eyebrow, title, subtitle, accent, symbol):
 
 st.sidebar.markdown("## 🛡️ OPSFORGE")
 st.sidebar.caption("Autonomous AI Operations Company")
-page = st.sidebar.radio("Workspace", ["Command Centre", "Agent Organisation", "Governance & Approvals", "30-Day Roadmap", "Deployment Notes"])
+page = st.sidebar.radio("Workspace", ["Command Centre", "Signal → Execution", "Agent Organisation", "Governance & Approvals", "30-Day Roadmap", "Deployment Notes"])
 st.sidebar.divider()
 st.sidebar.caption("SHOWCASE ENVIRONMENT")
 st.sidebar.info("Synthetic demo data · No live agents · No production integrations")
@@ -173,6 +174,9 @@ elif page == "Deployment Notes":
     st.markdown("**Local Paperclip URL:** http://localhost:3100 (only on the machine where Paperclip is running).")
     st.markdown("**Local OPSFORGE Python app:** the existing repository's native server remains separate from this Streamlit showcase.")
     st.markdown("**Deployment steps:** connect this GitHub repository to Streamlit Community Cloud, select branch main, and set the app file to streamlit_app.py.")
+
+elif page == "Signal → Execution":
+    render_signal_pipeline()
 
 st.divider()
 st.caption(f"OPSFORGE · Public showcase · Updated {datetime.now(timezone.utc).strftime('%Y-%m-%d')} UTC · Synthetic data only")
