@@ -1,0 +1,40 @@
+name: OPSFORGE Resilience Quality Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "streamlit_app.py"
+      - "signal_pipeline.py"
+      - "resilience_module.py"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/resilience-quality.yml"
+  pull_request:
+    paths:
+      - "streamlit_app.py"
+      - "signal_pipeline.py"
+      - "resilience_module.py"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/resilience-quality.yml"
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install application and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+      - name: Compile application modules
+        run: python -m py_compile streamlit_app.py signal_pipeline.py resilience_module.py
+      - name: Test deterministic resilience scoring
+        run: pytest -q tests/test_resilience_scoring.py
