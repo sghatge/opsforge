@@ -125,6 +125,20 @@ opsforge/
 └── tests/
 ```
 
+
+### Signal-to-Execution workspace
+
+The Streamlit showcase now includes a **Signal → Execution** workspace in `signal_pipeline.py`:
+
+- Reads public RSS feeds using Python's standard library (no extra package or API key).
+- Scores relevant items with transparent keyword weights and routes them to specialist analyst roles.
+- Classifies signals as **Autonomous**, **Notify** or **Approve**.
+- Records reviewer decisions and rationale in a downloadable CSV.
+- Keeps all external actions disabled. Approval is a recorded decision, not permission to execute a CRM, SFTP, email or deployment action.
+
+The public showcase keeps its decision ledger in Streamlit session state; it is not durable storage across restarts or users. Use the secured local OPSFORGE runtime for durable operational records. Feed availability and relevance depend on the public publishers.
+
+
 ## Author
 
 Built by **Sangram Ghatge**, Marketing Ops & CRM technology lead (Adobe Campaign Classic v8, Salesforce, AI operations).
