@@ -12,16 +12,6 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-st.markdown("""
-<style>
-.metric-card { background:linear-gradient(145deg,#151f35,#10182a); border:1px solid #293955;
- border-radius:14px; padding:16px 18px; min-height:112px; }
-.metric-label { color:#91a4c2; font-size:12px; text-transform:uppercase; letter-spacing:.1em; }
-.metric-value { color:#f4f7fb; font-size:30px; font-weight:750; margin-top:6px; }
-.metric-note { color:#8ea0ba; font-size:12px; margin-top:3px; }
-</style>
-""", unsafe_allow_html=True)
-
 PROVIDERS = [
     {"name":"Amazon Web Services","url":"https://status.aws.amazon.com/data.json","kind":"AWS"},
     {"name":"Microsoft Azure","url":"https://azure.status.microsoft/en-us/status/feed/","kind":"RSS"},
@@ -129,6 +119,15 @@ def card(label: str, value: str, note: str = "") -> None:
 
 def render_resilience(page: str | None = None) -> None:
     """Render the Resilience Command Centre inside the main OPSFORGE app."""
+    st.markdown("""
+    <style>
+    .metric-card { background:linear-gradient(145deg,#151f35,#10182a); border:1px solid #293955;
+     border-radius:14px; padding:16px 18px; min-height:112px; }
+    .metric-label { color:#91a4c2; font-size:12px; text-transform:uppercase; letter-spacing:.1em; }
+    .metric-value { color:#f4f7fb; font-size:30px; font-weight:750; margin-top:6px; }
+    .metric-note { color:#8ea0ba; font-size:12px; margin-top:3px; }
+    </style>
+    """, unsafe_allow_html=True)
     st.subheader("OPSFORGE / RESILIENCE")
     if page is None:
         page = st.radio(
