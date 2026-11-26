@@ -23,6 +23,27 @@ section[data-testid="stSidebar"] {border-right:1px solid rgba(128,128,128,.18)}
 </style>
 """, unsafe_allow_html=True)
 
+
+def section_banner(eyebrow, title, subtitle, accent, symbol):
+    """Responsive, lightweight banner with no external image dependency."""
+    st.markdown(f"""
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;
+                padding:1.15rem 1.4rem;margin:.35rem 0 1.1rem;border-radius:16px;
+                border:1px solid rgba(130,150,170,.28);
+                background:radial-gradient(circle at 82% 30%,{accent}55,transparent 35%),
+                           linear-gradient(115deg,rgba(13,28,42,.96),rgba(18,43,55,.92));">
+      <div style="min-width:0">
+        <div style="font-size:.72rem;letter-spacing:.16em;font-weight:700;color:{accent}">{eyebrow}</div>
+        <div style="font-size:1.65rem;font-weight:750;line-height:1.2;margin:.25rem 0;color:#f5f7fa">{title}</div>
+        <div style="font-size:.92rem;color:#c3d0d8">{subtitle}</div>
+      </div>
+      <div aria-hidden="true" style="flex:0 0 auto;font-size:clamp(2.8rem,8vw,5.2rem);
+                  line-height:1;padding:.25rem .55rem;color:{accent};
+                  filter:drop-shadow(0 0 18px {accent}88)">{symbol}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 st.sidebar.markdown("## 🛡️ OPSFORGE")
 st.sidebar.caption("Autonomous AI Operations Company")
 page = st.sidebar.radio("Workspace", ["Command Centre", "Agent Organisation", "Governance & Approvals", "30-Day Roadmap", "Deployment Notes"])
@@ -46,6 +67,7 @@ with hero_right:
 
 if page == "Command Centre":
     st.subheader("Operating overview")
+    section_banner("LIVE VIEW · DEMO METRICS", "Command Centre", "One view of the operating model, control posture and performance signals.", "#54d6c4", "◈")
     st.caption("Illustrative indicators for the public demo. These are not live system measurements.")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Registered agent roles", "6")
@@ -82,6 +104,7 @@ if page == "Command Centre":
 
 elif page == "Agent Organisation":
     st.subheader("Proposed agent organisation")
+    section_banner("PEOPLE & DIGITAL WORKFORCE", "Agent Organisation", "A specialist team structure with clear remits and founder oversight.", "#7fb5ff", "⌘")
     st.caption("Roles are a proposed operating model. They are not active agents.")
     st.image(HERO_IMAGE, caption="Illustrative agent orchestration and monitoring visual · Image credit: PikWizard", use_container_width=True)
     agents = [
@@ -102,6 +125,7 @@ elif page == "Agent Organisation":
 
 elif page == "Governance & Approvals":
     st.subheader("Human-in-the-loop governance")
+    section_banner("TRUST · CONTROL · EVIDENCE", "Governance & Approvals", "Policy gates and human decisions before sensitive or irreversible actions.", "#55d6a5", "⬡")
     st.markdown('<div class="visual-card"><div class="visual-icon">🔐 &nbsp; 🧑‍⚖️ &nbsp; 📋</div><b>Policy → Human review → Auditable decision</b><p class="muted">Sensitive actions pause until an authorised person approves them.</p></div>', unsafe_allow_html=True)
     st.write("The following controls define the intended OPSFORGE approval policy.")
     controls = [
@@ -119,6 +143,7 @@ elif page == "Governance & Approvals":
 
 elif page == "30-Day Roadmap":
     st.subheader("Foundation roadmap")
+    section_banner("30-DAY EXECUTION PLAN", "From foundation to pilot", "A sequenced path to a controlled, measurable first workflow.", "#f2b66d", "➜")
     st.markdown('<div class="visual-card"><div class="visual-icon">🚀 &nbsp; 🧱 &nbsp; 🧪 &nbsp; 📈</div><b>Establish → Organise → Pilot → Validate</b><p class="muted">A controlled 30-day path from local setup to a measured test workflow.</p></div>', unsafe_allow_html=True)
     roadmap = [
         ("Days 1–3", "Environment and security baseline", "Local Paperclip + Codex setup, secrets hygiene, loopback-only access."),
@@ -134,6 +159,7 @@ elif page == "30-Day Roadmap":
 
 elif page == "Deployment Notes":
     st.subheader("Deployment architecture")
+    section_banner("PLATFORM & CONNECTIVITY", "Deployment Architecture", "Keep the public showcase separate from the secured agent execution runtime.", "#b49aff", "⌁")
     st.markdown('<div class="visual-card"><div class="visual-icon">🌐 GitHub &nbsp; → &nbsp; 🖥️ Streamlit &nbsp; | &nbsp; 🔒 Paperclip + Codex</div><b>Separate presentation from execution</b><p class="muted">The public showcase displays the operating model; the secured Paperclip runtime handles agent execution.</p></div>', unsafe_allow_html=True)
     st.markdown("""
 | Component | Intended responsibility | Hosting |
