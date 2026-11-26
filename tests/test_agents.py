@@ -22,7 +22,8 @@ class TestCatalog(BaseTestCase):
     def test_five_agents_registered(self):
         ids = {a["id"] for a in list_agents()}
         self.assertEqual(ids, {"qa_agent", "sop_agent", "segmentation_agent",
-                               "readiness_agent", "reporting_agent"})
+                               "readiness_agent", "reporting_agent", "research_agent",
+                               "signal_triage_agent"})
 
     def test_sensitive_steps_are_gated(self):
         for agent_id in ("qa_agent", "readiness_agent"):
@@ -117,6 +118,60 @@ class TestRuns(BaseTestCase):
         with self.assertRaises(ValueError):
             approve_step(self.db, run["id"], 1, "Sangram")
 
+
+
+class TestSignalTriageAgent(BaseTestCase):
+    def test_notify_signal_uses_existing_evidence_and_audit_ledger_without_gate(self):
+        run = start_run(self.db, "signal_triage_agent", {
+            "headline": "Adobe Campaign workflow capacity review",
+            "summary": "CRM campaign capacity planning update.",
+            "source": "Internal test fixture",
+            "url": "https://example.com/signal",
+            "classification": "Notify",
+            "evidence_kind": "signal",
+            "evidence_title": "Signal — capacity review",
+        })
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual([step["status"] for step in run["steps"]], ["done", "done", "done"])
+        self.assertEqual(run["steps"][0]["output"]["classification"], "Notify")
+        self.assertEqual(run["steps"][2]["output"]["decision"], "no_human_gate_required")
+        self.assertEqual(run["steps"][2]["output"]["external_action"], "not_executed")
+
+    def test_high_risk_signal_pauses_for_named_human_approval(self):
+        run = start_run(self.db, "signal_triage_agent", {
+            "headline": "SFTP service outage affecting production campaign exports",
+            "summary": "Service disruption reported.",
+            "source": "Internal test fixture",
+            "url": "https://example.com/incident",
+            "classification": "Notify",
+            "evidence_kind": "signal",
+        })
+        self.assertEqual(run["status"], "pending_approval")
+        self.assertEqual(run["steps"][0]["output"]["classification"], "Approve")
+        gated = next(step for step in run["steps"] if step["status"] == "pending_approval")
+        done = approve_step(self.db, run["id"], gated["seq"], "Sangram", "Reviewed incident evidence")
+        self.assertEqual(done["status"], "completed")
+        self.assertEqual(done["steps"][-1]["output"]["decision"], "approved_by_human")
+        self.assertEqual(done["steps"][-1]["output"]["external_action"], "not_executed")
+        self.assertEqual(done["steps"][-1]["output"]["approver"], "Sangram")
+
+    def test_high_risk_signal_cannot_be_downgraded_by_caller(self):
+        run = start_run(self.db, "signal_triage_agent", {
+            "headline": "Production failure caused by SFTP outage",
+            "source": "Test",
+            "classification": "Autonomous",
+        })
+        self.assertEqual(run["status"], "pending_approval")
+        self.assertEqual(run["steps"][0]["output"]["classification"], "Approve")
+
+    def test_signal_rejects_non_http_source_url(self):
+        run = start_run(self.db, "signal_triage_agent", {
+            "headline": "Routine product update",
+            "source": "Test",
+            "url": "javascript:alert(1)",
+            "classification": "Autonomous",
+        })
+        self.assertEqual(run["status"], "failed")
 
 class TestProvider(BaseTestCase):
     def test_deterministic_default(self):
