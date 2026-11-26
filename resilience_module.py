@@ -127,9 +127,16 @@ def card(label: str, value: str, note: str = "") -> None:
     st.markdown(f'<div class="metric-card"><div class="metric-label">{label}</div><div class="metric-value">{value}</div><div class="metric-note">{note}</div></div>', unsafe_allow_html=True)
 
 
-def render_resilience(page: str = "Overview") -> None:
+def render_resilience(page: str | None = None) -> None:
     """Render the Resilience Command Centre inside the main OPSFORGE app."""
     st.subheader("OPSFORGE / RESILIENCE")
+    if page is None:
+        page = st.radio(
+            "RESILIENCE WORKSPACE",
+            ["Overview", "Live Signals", "Vendor Risk", "Continuity Builder", "AI Exposure", "Methodology"],
+            horizontal=True,
+            key="resilience_workspace",
+        )
     st.caption("Operational resilience intelligence · Public provider signals · Explainable risk · Human-owned decisions")
     if "vendors" not in st.session_state:
         st.session_state.vendors = [
