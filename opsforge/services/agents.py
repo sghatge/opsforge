@@ -434,7 +434,9 @@ TOOLS = {
     "deployment.signoff": _tool_deployment_signoff,
     "metrics.collect": _tool_metrics,
     "report.compose": _tool_report_compose,
-    "signal.assess": _tool_signal_assess,\n    "signal.signoff": _tool_signal_signoff,\n    "research.retrieve": _tool_research_retrieve,
+    "signal.assess": _tool_signal_assess,
+    "signal.signoff": _tool_signal_signoff,
+    "research.retrieve": _tool_research_retrieve,
     "research.compose": _tool_research_compose,
 }
 
