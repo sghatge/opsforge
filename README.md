@@ -139,6 +139,20 @@ The Streamlit showcase now includes a **Signal → Execution** workspace in `sig
 The public showcase keeps its decision ledger in Streamlit session state; it is not durable storage across restarts or users. Use the secured local OPSFORGE runtime for durable operational records. Feed availability and relevance depend on the public publishers.
 
 
+
+### Governed runtime integration
+
+The `signal_triage_agent` is registered in the existing OPSFORGE agent catalog and uses the same SQLite run ledger, evidence register, approvals table and audit events as the other agents. Its flow is:
+
+1. Validate the signal and classify it deterministically.
+2. File the assessment as evidence.
+3. Complete low-risk triage automatically; pause **Approve** signals at the existing named-human approval gate.
+
+The Signal → Execution Streamlit page can submit to a local runtime when `OPSFORGE_RUNTIME_URL=http://127.0.0.1:8765` is configured. The connector deliberately accepts loopback HTTP targets only. The public Streamlit Cloud showcase does not connect to a private local machine; leave this variable unset in the cloud deployment. Start the local OPSFORGE server and local Streamlit app on the same machine to use the connector.
+
+A recorded approval is a risk decision only. No CRM, SFTP, email, deployment or other external action is executed.
+
+
 ## Author
 
 Built by **Sangram Ghatge**, Marketing Ops & CRM technology lead (Adobe Campaign Classic v8, Salesforce, AI operations).
