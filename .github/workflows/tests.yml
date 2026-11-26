@@ -25,3 +25,5 @@ jobs:
         run: python -m unittest discover -s tests -t .
       - name: Run OPSFORGE all-in-one policy and QA tests
         run: python OPSFORGE_ALL_IN_1.py --test
+      - name: Compile four-mission integration smoke test
+        run: python -m py_compile scripts/opsforge_integration_smoke.py
