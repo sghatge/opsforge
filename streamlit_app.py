@@ -6,6 +6,7 @@ It does not connect to Paperclip or execute agents.
 from datetime import datetime, timezone
 import streamlit as st
 from signal_pipeline import render_signal_pipeline
+from resilience_module import render_resilience
 
 st.set_page_config(page_title="OPSFORGE | AI Operations Command Centre", page_icon="🛡️", layout="wide", initial_sidebar_state="expanded")
 HERO_IMAGE = "https://thumbs.wbm.im/pw/medium/c7251a6cb58068b11a9cf1163e793a48.jpg"
@@ -47,7 +48,7 @@ def section_banner(eyebrow, title, subtitle, accent, symbol):
 
 st.sidebar.markdown("## 🛡️ OPSFORGE")
 st.sidebar.caption("Autonomous AI Operations Company")
-page = st.sidebar.radio("Workspace", ["Command Centre", "Signal → Execution", "Agent Organisation", "Governance & Approvals", "30-Day Roadmap", "Deployment Notes"])
+page = st.sidebar.radio("Workspace", ["Command Centre", "Signal → Execution", "Agent Organisation", "Governance & Approvals", "Resilience Command Centre", "30-Day Roadmap", "Deployment Notes"])
 st.sidebar.divider()
 st.sidebar.caption("SHOWCASE ENVIRONMENT")
 st.sidebar.info("Synthetic demo data · No live agents · No production integrations")
@@ -141,6 +142,9 @@ elif page == "Governance & Approvals":
         with st.expander(title, expanded=True):
             st.write(desc)
     st.error("No approval buttons here are connected to a live execution system. This page documents policy only.")
+
+elif page == "Resilience Command Centre":
+    render_resilience()
 
 elif page == "30-Day Roadmap":
     st.subheader("Foundation roadmap")
