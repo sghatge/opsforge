@@ -461,6 +461,13 @@ def get_agent(agent_id: str) -> dict:
     return agent
 
 
+def _signal_requires_approval(task: dict) -> bool:
+    text = (str(task.get("headline", "")) + " " + str(task.get("summary", ""))).lower()
+    high_risk = ("outage", "service disruption", "vulnerability", "security incident",
+                 "sftp", "sla breach", "data exposure", "production failure")
+    return str(task.get("classification", "")).strip().lower() == "approve" or any(term in text for term in high_risk)
+
+
 def start_run(db: Database, agent_id: str, task: dict) -> dict:
     agent = get_agent(agent_id)
     if task.get("use_sample"):
@@ -481,7 +488,7 @@ def start_run(db: Database, agent_id: str, task: dict) -> dict:
             " input, output, error, started_at, finished_at)"
             " VALUES (?, ?, ?, ?, ?, ?, 'pending', 'null', 'null', '', NULL, NULL)",
             (new_id("stp"), run_id, seq, step["name"], step["tool"],
-             1 if (step["requires_approval"] and (step["tool"] != "signal.signoff" or str(task.get("classification", "")).strip().lower() == "approve")) else 0),
+             1 if (step["requires_approval"] and (step["tool"] != "signal.signoff" or _signal_requires_approval(task))) else 0),
         )
     db.audit("agent_run.started", {"run_id": run_id, "agent_id": agent_id})
     _advance(db, run_id)
