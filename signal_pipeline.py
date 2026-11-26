@@ -6,6 +6,8 @@ decision ledger. No external actions are executed by this module.
 from __future__ import annotations
 
 import csv
+import json
+import os
 import hashlib
 import html
 import io
@@ -16,6 +18,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from urllib.parse import urlparse
 
 import streamlit as st
 
@@ -137,6 +140,36 @@ def load_signals(hours: int = 168):
     return sorted(unique.values(), key=lambda row: (row["score"], row["published"]), reverse=True), errors
 
 
+
+def runtime_url():
+    """Allow only loopback runtime targets; never turn the public showcase into an SSRF proxy."""
+    configured = os.environ.get("OPSFORGE_RUNTIME_URL", "").strip().rstrip("/")
+    if not configured:
+        return ""
+    parsed = urlparse(configured)
+    if parsed.scheme != "http" or parsed.hostname not in ("127.0.0.1", "localhost", "::1"):
+        return ""
+    return configured
+
+
+def submit_to_runtime(signal: dict, base_url: str) -> dict:
+    payload = {
+        "headline": signal["headline"], "summary": signal["summary"],
+        "source": signal["source"], "url": signal.get("url", ""),
+        "classification": signal["classification"],
+        "evidence_kind": "external_signal",
+        "evidence_title": "Signal — " + signal["headline"][:160],
+    }
+    request = urllib.request.Request(
+        base_url + "/api/agents/signal_triage_agent/run",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=5) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
 def render_signal_pipeline():
     st.subheader("Signal → Idea → Governed decision")
     st.caption("Free RSS intake · deterministic triage · human decision record · no production execution")
@@ -149,6 +182,8 @@ def render_signal_pipeline():
 
     with st.sidebar:
         st.markdown("### Signal controls")
+        configured_runtime = runtime_url()
+        st.caption("Local governed runtime: connected by configuration" if configured_runtime else "Local governed runtime: not configured")
         lookback = st.selectbox("Look-back window", [24, 72, 168, 336], index=2, format_func=lambda h: f"{h} hours")
         min_score = st.slider("Minimum relevance score", 1, 12, 1)
         if st.button("Refresh signals", use_container_width=True):
@@ -194,6 +229,16 @@ def render_signal_pipeline():
                     st.link_button("Open original source", item["url"])
                 st.markdown("**Layer 2 · Proposed idea**")
                 st.write(suggested_action(item["classification"], agent))
+                configured_runtime = runtime_url()
+                if configured_runtime:
+                    if st.button("Submit to governed runtime", key=f"runtime_{item['id']}"):
+                        try:
+                            runtime_result = submit_to_runtime(item, configured_runtime)
+                            st.success(f"Recorded in OPSFORGE run ledger: {runtime_result.get('id', 'run created')} · status {runtime_result.get('status', 'unknown')}")
+                            if runtime_result.get("status") == "pending_approval":
+                                st.warning("This signal is waiting in the existing OPSFORGE Run Ledger for a named human decision.")
+                        except (urllib.error.URLError, TimeoutError, ValueError, KeyError) as exc:
+                            st.error(f"Local runtime unavailable or rejected the signal: {type(exc).__name__}")
                 st.markdown("**Layer 3 · Governance decision**")
                 if item["classification"] == "Approve":
                     st.warning("Human approval required. This is a decision record only; it does not execute the proposed action.")
