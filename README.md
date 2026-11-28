@@ -168,3 +168,13 @@ Copyright © 2026 Sangram Ghatge. All rights reserved. The code is published for
 A public Streamlit showcase is available in `streamlit_app.py`. It uses synthetic data only and documents the OPSFORGE operating model, proposed agent organisation, governance controls and 30-day roadmap. It does not connect to Paperclip or execute agents.
 
 Deployment instructions: [docs/STREAMLIT_DEPLOYMENT.md](docs/STREAMLIT_DEPLOYMENT.md). Deploy from Streamlit Community Cloud using branch `main` and entrypoint `streamlit_app.py`.
+
+
+## Repository governance
+
+- [Security policy](SECURITY.md)
+- [Contribution guide](CONTRIBUTING.md)
+- [Repository governance baseline](docs/REPOSITORY_GOVERNANCE.md)
+- [Governance CI check](.github/workflows/repository-governance.yml)
+
+The governance workflow checks the presence of core project documents and rejects a tracked real `.env` file. The existing unit-test workflows remain separate and continue to run the project test suites.
