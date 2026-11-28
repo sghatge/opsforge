@@ -1,0 +1,41 @@
+name: Repository governance baseline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "LICENSE"
+      - "SECURITY.md"
+      - "CONTRIBUTING.md"
+      - ".github/workflows/repository-governance.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "LICENSE"
+      - "SECURITY.md"
+      - "CONTRIBUTING.md"
+      - ".github/workflows/repository-governance.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify baseline documents and tracked environment files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in README.md LICENSE SECURITY.md CONTRIBUTING.md; do
+            test -s "$file" || { echo "::error file=$file::Required repository document is missing or empty"; exit 1; }
+          done
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "::error::A real .env file is tracked. Remove it and rotate any exposed credentials."
+            exit 1
+          fi
+          echo "Repository documentation baseline passed."
