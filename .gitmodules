@@ -1,0 +1,3 @@
+[submodule ".agents/upstream/marketingskills"]
+	path = .agents/upstream/marketingskills
+	url = https://github.com/coreyhaines31/marketingskills.git

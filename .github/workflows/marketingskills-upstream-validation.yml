@@ -1,0 +1,30 @@
+name: MarketingSkills upstream governance
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, feat/marketingskills-governed-integration]
+  workflow_dispatch:
+
+jobs:
+  verify-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with pinned upstream submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Verify source pin, licence, and governed adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="2bf95edb4ebd37198ab7fd18b99ba95c2145ec64"
+          test -d .agents/upstream/marketingskills
+          actual="$(git -C .agents/upstream/marketingskills rev-parse HEAD)"
+          test "$actual" = "$expected"
+          test -f .agents/upstream/marketingskills/LICENSE
+          test -f .agents/skills/marketing-intelligence/SKILL.md
+          grep -q "OPSFORGE Policy" .agents/skills/marketing-intelligence/SKILL.md
+          grep -q "Fail closed" .agents/skills/marketing-intelligence/SKILL.md
+          grep -q "FACT / HYPOTHESIS / ASSUMPTION / UNKNOWN" .agents/skills/marketing-intelligence/SKILL.md
+          echo "Pinned MarketingSkills source and governance adapter verified."
